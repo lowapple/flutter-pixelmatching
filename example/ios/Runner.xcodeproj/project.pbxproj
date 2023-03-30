@@ -14,6 +14,12 @@
 		97C146FC1CF9000F007C117D /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 97C146FA1CF9000F007C117D /* Main.storyboard */; };
 		97C146FE1CF9000F007C117D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 97C146FD1CF9000F007C117D /* Assets.xcassets */; };
 		97C147011CF9000F007C117D /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 97C146FF1CF9000F007C117D /* LaunchScreen.storyboard */; };
+		9E097BF829D59430006B6D95 /* image_converter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9E097BEC29D5942F006B6D95 /* image_converter.cpp */; };
+		9E097BF929D59430006B6D95 /* opencv_pixelmatching.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9E097BEF29D5942F006B6D95 /* opencv_pixelmatching.cpp */; };
+		9E097BFA29D59430006B6D95 /* output in Resources */ = {isa = PBXBuildFile; fileRef = 9E097BF029D5942F006B6D95 /* output */; };
+		9E097BFB29D59430006B6D95 /* debug_logger.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9E097BF229D59430006B6D95 /* debug_logger.cpp */; };
+		9E097BFC29D59430006B6D95 /* image_cache.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9E097BF429D59430006B6D95 /* image_cache.cpp */; };
+		9E097BFD29D59430006B6D95 /* common.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9E097BF729D59430006B6D95 /* common.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -45,6 +51,18 @@
 		97C146FD1CF9000F007C117D /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		97C147001CF9000F007C117D /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		97C147021CF9000F007C117D /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		9E097BEC29D5942F006B6D95 /* image_converter.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = image_converter.cpp; path = ../../../ios/Classes/image_converter.cpp; sourceTree = "<group>"; };
+		9E097BED29D5942F006B6D95 /* debug_logger.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = debug_logger.hpp; path = ../../../ios/Classes/debug_logger.hpp; sourceTree = "<group>"; };
+		9E097BEE29D5942F006B6D95 /* image_processor.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = image_processor.hpp; path = ../../../ios/Classes/image_processor.hpp; sourceTree = "<group>"; };
+		9E097BEF29D5942F006B6D95 /* opencv_pixelmatching.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = opencv_pixelmatching.cpp; path = ../../../ios/Classes/opencv_pixelmatching.cpp; sourceTree = "<group>"; };
+		9E097BF029D5942F006B6D95 /* output */ = {isa = PBXFileReference; lastKnownFileType = folder; name = output; path = ../../../ios/Classes/output; sourceTree = "<group>"; };
+		9E097BF129D59430006B6D95 /* common.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = common.hpp; path = ../../../ios/Classes/common.hpp; sourceTree = "<group>"; };
+		9E097BF229D59430006B6D95 /* debug_logger.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = debug_logger.cpp; path = ../../../ios/Classes/debug_logger.cpp; sourceTree = "<group>"; };
+		9E097BF329D59430006B6D95 /* image_converter.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = image_converter.hpp; path = ../../../ios/Classes/image_converter.hpp; sourceTree = "<group>"; };
+		9E097BF429D59430006B6D95 /* image_cache.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = image_cache.cpp; path = ../../../ios/Classes/image_cache.cpp; sourceTree = "<group>"; };
+		9E097BF529D59430006B6D95 /* opencv_pixelmatching.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = opencv_pixelmatching.h; path = ../../../ios/Classes/opencv_pixelmatching.h; sourceTree = "<group>"; };
+		9E097BF629D59430006B6D95 /* image_cache.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = image_cache.hpp; path = ../../../ios/Classes/image_cache.hpp; sourceTree = "<group>"; };
+		9E097BF729D59430006B6D95 /* common.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = common.cpp; path = ../../../ios/Classes/common.cpp; sourceTree = "<group>"; };
 		A6924F6D33196D356E739C1E /* Pods-Runner.profile.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Runner.profile.xcconfig"; path = "Target Support Files/Pods-Runner/Pods-Runner.profile.xcconfig"; sourceTree = "<group>"; };
 		BC07FF327722D79A6F8FBAB6 /* Pods-Runner.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Runner.debug.xcconfig"; path = "Target Support Files/Pods-Runner/Pods-Runner.debug.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -94,6 +112,18 @@
 		97C146F01CF9000F007C117D /* Runner */ = {
 			isa = PBXGroup;
 			children = (
+				9E097BF729D59430006B6D95 /* common.cpp */,
+				9E097BF129D59430006B6D95 /* common.hpp */,
+				9E097BF229D59430006B6D95 /* debug_logger.cpp */,
+				9E097BED29D5942F006B6D95 /* debug_logger.hpp */,
+				9E097BF429D59430006B6D95 /* image_cache.cpp */,
+				9E097BF629D59430006B6D95 /* image_cache.hpp */,
+				9E097BEC29D5942F006B6D95 /* image_converter.cpp */,
+				9E097BF329D59430006B6D95 /* image_converter.hpp */,
+				9E097BEE29D5942F006B6D95 /* image_processor.hpp */,
+				9E097BEF29D5942F006B6D95 /* opencv_pixelmatching.cpp */,
+				9E097BF529D59430006B6D95 /* opencv_pixelmatching.h */,
+				9E097BF029D5942F006B6D95 /* output */,
 				97C146FA1CF9000F007C117D /* Main.storyboard */,
 				97C146FD1CF9000F007C117D /* Assets.xcassets */,
 				97C146FF1CF9000F007C117D /* LaunchScreen.storyboard */,
@@ -121,7 +151,6 @@
 				2C0698752E4F6FB2D21E328C /* Pods-Runner.release.xcconfig */,
 				A6924F6D33196D356E739C1E /* Pods-Runner.profile.xcconfig */,
 			);
-			name = Pods;
 			path = Pods;
 			sourceTree = "<group>";
 		};
@@ -188,6 +217,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				9E097BFA29D59430006B6D95 /* output in Resources */,
 				97C147011CF9000F007C117D /* LaunchScreen.storyboard in Resources */,
 				3B3967161E833CAA004F5970 /* AppFrameworkInfo.plist in Resources */,
 				97C146FE1CF9000F007C117D /* Assets.xcassets in Resources */,
@@ -274,7 +304,12 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				9E097BF929D59430006B6D95 /* opencv_pixelmatching.cpp in Sources */,
+				9E097BFD29D59430006B6D95 /* common.cpp in Sources */,
+				9E097BFB29D59430006B6D95 /* debug_logger.cpp in Sources */,
+				9E097BFC29D59430006B6D95 /* image_cache.cpp in Sources */,
 				74858FAF1ED2DC5600515810 /* AppDelegate.swift in Sources */,
+				9E097BF829D59430006B6D95 /* image_converter.cpp in Sources */,
 				1498D2341E8E89220040F4C2 /* GeneratedPluginRegistrant.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -358,6 +393,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CURRENT_PROJECT_VERSION = "$(FLUTTER_BUILD_NUMBER)";
+				DEVELOPMENT_TEAM = 9QVC39BXMC;
 				ENABLE_BITCODE = NO;
 				INFOPLIST_FILE = Runner/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -486,6 +522,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CURRENT_PROJECT_VERSION = "$(FLUTTER_BUILD_NUMBER)";
+				DEVELOPMENT_TEAM = 9QVC39BXMC;
 				ENABLE_BITCODE = NO;
 				INFOPLIST_FILE = Runner/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -508,6 +545,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CURRENT_PROJECT_VERSION = "$(FLUTTER_BUILD_NUMBER)";
+				DEVELOPMENT_TEAM = 9QVC39BXMC;
 				ENABLE_BITCODE = NO;
 				INFOPLIST_FILE = Runner/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (

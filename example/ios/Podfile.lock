@@ -1,21 +1,34 @@
 PODS:
+  - camera_avfoundation (0.0.1):
+    - Flutter
   - Flutter (1.0.0)
   - flutter_pixelmatching (0.0.1):
     - Flutter
+    - OpenCV (= 4.3.0)
+  - OpenCV (4.3.0)
 
 DEPENDENCIES:
+  - camera_avfoundation (from `.symlinks/plugins/camera_avfoundation/ios`)
   - Flutter (from `Flutter`)
   - flutter_pixelmatching (from `.symlinks/plugins/flutter_pixelmatching/ios`)
 
+SPEC REPOS:
+  trunk:
+    - OpenCV
+
 EXTERNAL SOURCES:
+  camera_avfoundation:
+    :path: ".symlinks/plugins/camera_avfoundation/ios"
   Flutter:
     :path: Flutter
   flutter_pixelmatching:
     :path: ".symlinks/plugins/flutter_pixelmatching/ios"
 
 SPEC CHECKSUMS:
+  camera_avfoundation: 3125e8cd1a4387f6f31c6c63abb8a55892a9eeeb
   Flutter: f04841e97a9d0b0a8025694d0796dd46242b2854
-  flutter_pixelmatching: 670982a41233f41e3299cb4539eab40474963b60
+  flutter_pixelmatching: c949fbae9b8e25cb6d9f83cdbfd25884ec52af2f
+  OpenCV: 681e0451c1e54c5930a8922277f817ed5d5ab459
 
 PODFILE CHECKSUM: ef19549a9bc3046e7bb7d2fab4d021637c0c58a3
 

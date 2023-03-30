@@ -19,7 +19,7 @@ class _MyAppState extends State<MyApp> {
   @override
   void initState() {
     super.initState();
-
+    FlutterPixelMatching().init();
     log('pixelmatching : ${FlutterPixelMatching().version()}');
   }
 

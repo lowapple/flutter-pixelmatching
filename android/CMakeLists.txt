@@ -6,5 +6,13 @@ set_target_properties(lib_opencv PROPERTIES IMPORTED_LOCATION ${CMAKE_CURRENT_SO
 
 find_library(log-lib log)
 
-add_library(opencv_pixelmatching SHARED ../ios/Classes/opencv_pixelmatching.cpp)
+add_library(
+    opencv_pixelmatching 
+    
+    SHARED 
+    
+    ../ios/Classes/debug_logger.cpp
+    ../ios/Classes/common.cpp
+    ../ios/Classes/opencv_pixelmatching.cpp
+    )
 target_link_libraries(opencv_pixelmatching lib_opencv ${log-lib})
