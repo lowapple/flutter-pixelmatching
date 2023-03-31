@@ -8,7 +8,6 @@ cv::Mat ImageConverter::Convert(cv::Mat img)
 
     if (img.cols == Constants::base_img_width && img.rows == Constants::base_img_height)
     {
-        // 0 -> 1�� ����
         for (int row = 0; row < gray.rows; row++)
         {
             for (int column = 0; column < gray.cols; column++)
@@ -56,7 +55,6 @@ cv::Mat ImageConverter::Convert(cv::Mat img)
     return result;
 }
 
-// Matrixȭ + Color space �� ũ�� ����
 cv::Mat ImageConverter::Convert(char *ptr, int img_width, int img_height)
 {
     return Convert({img_height, img_width, Constants::external_img_type, ptr});

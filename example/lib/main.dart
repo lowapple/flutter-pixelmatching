@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_pixelmatching/flutter_pixelmatching.dart';
+import 'package:image/image.dart' as imglib;
 
 void main() {
   runApp(const MyApp());
@@ -21,7 +22,7 @@ class _MyAppState extends State<MyApp> {
   FlutterPixelMatching pixelmatching = FlutterPixelMatching();
   bool process = false;
   // capturing images
-  Image? capture;
+  imglib.Image? capture;
 
   @override
   void initState() {
@@ -54,9 +55,10 @@ class _MyAppState extends State<MyApp> {
   cameraStream(CameraImage cameraImage) {
     if (process) return;
     process = true;
-    final pImage = pixelmatching.grayscale(cameraImage, cameraImage.width, cameraImage.height);
-    if (pImage != null) {
-      capture = pImage;
+    // final h = Platform.isAndroid ? cameraImage.width : cameraImage.height;
+    // final w = Platform.isAndroid ? cameraImage.height : cameraImage.width;
+    capture = pixelmatching.yuv2rgb(cameraImage);
+    if (capture != null) {
       setState(() {});
     }
   }
@@ -74,7 +76,7 @@ class _MyAppState extends State<MyApp> {
                   controller != null ? CameraPreview(controller!) : Container(),
                 ],
               )
-            : capture!,
+            : Image.memory(imglib.encodeJpg(capture!)),
       ),
     );
   }

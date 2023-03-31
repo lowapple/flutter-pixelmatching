@@ -1,11 +1,9 @@
 import 'dart:ffi';
 import 'dart:io';
-import 'dart:typed_data';
 import 'package:camera/camera.dart';
 import 'package:ffi/ffi.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_pixelmatching/utils/camera_image.dart';
 import 'flutter_pixelmatching_bindings.dart' as bindings;
+import 'package:image/image.dart' as imglib;
 
 final DynamicLibrary _lib = Platform.isAndroid ? DynamicLibrary.open("libopencv_pixelmatching.so") : DynamicLibrary.process();
 
@@ -22,38 +20,40 @@ class FlutterPixelMatching {
     return version.toDartString();
   }
 
-  Image? grayscale(CameraImage image, int width, int height) {
-    var yBuffer = image.planes[0].bytes;
-    Uint8List? uBuffer;
-    Uint8List? vBuffer;
-    if (Platform.isAndroid) {
-      uBuffer = image.planes[1].bytes;
-      vBuffer = image.planes[2].bytes;
-    }
-    final ySize = yBuffer.lengthInBytes;
-    final uSize = uBuffer?.lengthInBytes ?? 0;
-    final vSize = vBuffer?.lengthInBytes ?? 0;
-    // image buffer size
-    final imgSize = ySize + uSize + vSize;
-    final buf = malloc.allocate<Uint8>(imgSize);
-    final outBuf = malloc.allocate<Uint8>(imgSize);
-    final bufSize = malloc.allocate<Uint32>(1);
-    bufSize[0] = imgSize;
-    // We always have at least 1 plane, on Android it si the yPlane on iOS its the rgba plane
-    if (Platform.isAndroid) {
-      buf.asTypedList(bufSize[0]).setRange(0, ySize, yBuffer);
-      buf.asTypedList(bufSize[0]).setRange(ySize, ySize + uSize, uBuffer!);
-      buf.asTypedList(bufSize[0]).setRange(ySize + uSize, imgSize, vBuffer!);
-    } else {
-      buf.asTypedList(bufSize[0]).setRange(0, imgSize, yBuffer);
-    }
+  imglib.Image? yuv2rgb(CameraImage image) {
+    // Allocate memory for the 3 planes of the image
+    final p1 = malloc.allocate<Uint8>(image.planes[0].bytes.length);
+    final p2 = malloc.allocate<Uint8>(image.planes[1].bytes.length);
+    final p3 = malloc.allocate<Uint8>(image.planes[2].bytes.length);
 
-    binding.grayscale(buf, width, height, Platform.isAndroid, outBuf);
-    final bytes = outBuf.asTypedList(bufSize[0]);
-    final memoryImage = Image.memory(bytes);
-    // malloc.free(buf);
-    // malloc.free(outBuf);
-    // malloc.free(bufSize);
-    return memoryImage;
+    final p1l = p1.asTypedList(image.planes[0].bytes.length);
+    final p2l = p2.asTypedList(image.planes[1].bytes.length);
+    final p3l = p3.asTypedList(image.planes[2].bytes.length);
+
+    p1l.setRange(0, image.planes[0].bytes.length, image.planes[0].bytes);
+    p2l.setRange(0, image.planes[1].bytes.length, image.planes[1].bytes);
+    p3l.setRange(0, image.planes[2].bytes.length, image.planes[2].bytes);
+
+    Pointer<Uint32> imgPointer = binding
+        .yuv2rgb(
+          p1.cast(),
+          p2.cast(),
+          p3.cast(),
+          image.planes[1].bytesPerRow,
+          image.planes[1].bytesPerPixel!,
+          image.planes[0].bytesPerRow,
+          image.height,
+        )
+        .cast();
+
+    final imgBytes = imgPointer.asTypedList((image.planes[0].bytesPerRow * image.height));
+    final img = imglib.Image.fromBytes(width: image.height, height: image.planes[0].bytesPerRow, bytes: imgBytes.buffer);
+
+    malloc.free(p1);
+    malloc.free(p2);
+    malloc.free(p3);
+    malloc.free(imgPointer);
+
+    return img;
   }
 }

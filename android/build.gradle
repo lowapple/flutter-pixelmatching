@@ -41,7 +41,7 @@ android {
     }
 
     defaultConfig {
-        minSdkVersion 21
+        minSdkVersion 24
         externalNativeBuild {
             cmake {
                 // Enabling exception, RTTI and setting C++ standard version

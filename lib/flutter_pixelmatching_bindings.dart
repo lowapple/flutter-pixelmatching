@@ -7,34 +7,42 @@ import 'dart:ffi' as ffi;
 /// FFI bindings for OpenCV
 class PixelMatchingBindings {
   /// Holds the symbol lookup function.
-  final ffi.Pointer<T> Function<T extends ffi.NativeType>(String symbolName) _lookup;
+  final ffi.Pointer<T> Function<T extends ffi.NativeType>(String symbolName)
+      _lookup;
 
   /// The symbols are looked up in [dynamicLibrary].
-  PixelMatchingBindings(ffi.DynamicLibrary dynamicLibrary) : _lookup = dynamicLibrary.lookup;
+  PixelMatchingBindings(ffi.DynamicLibrary dynamicLibrary)
+      : _lookup = dynamicLibrary.lookup;
 
   /// The symbols are looked up with [lookup].
-  PixelMatchingBindings.fromLookup(ffi.Pointer<T> Function<T extends ffi.NativeType>(String symbolName) lookup) : _lookup = lookup;
+  PixelMatchingBindings.fromLookup(
+      ffi.Pointer<T> Function<T extends ffi.NativeType>(String symbolName)
+          lookup)
+      : _lookup = lookup;
 
   void init() {
     return _init();
   }
 
-  late final _initPtr = _lookup<ffi.NativeFunction<ffi.Void Function()>>('init');
+  late final _initPtr =
+      _lookup<ffi.NativeFunction<ffi.Void Function()>>('init');
   late final _init = _initPtr.asFunction<void Function()>();
 
   ffi.Pointer<ffi.Char> version() {
     return _version();
   }
 
-  late final _versionPtr = _lookup<ffi.NativeFunction<ffi.Pointer<ffi.Char> Function()>>('version');
-  late final _version = _versionPtr.asFunction<ffi.Pointer<ffi.Char> Function()>();
+  late final _versionPtr =
+      _lookup<ffi.NativeFunction<ffi.Pointer<ffi.Char> Function()>>('version');
+  late final _version =
+      _versionPtr.asFunction<ffi.Pointer<ffi.Char> Function()>();
 
   void grayscale(
-    ffi.Pointer<ffi.Uint8> buf,
+    ffi.Pointer<ffi.UnsignedChar> buf,
     int w,
     int h,
     bool isYuv,
-    ffi.Pointer<ffi.Uint8> out,
+    ffi.Pointer<ffi.UnsignedChar> out,
   ) {
     return _grayscale(
       buf,
@@ -45,10 +53,53 @@ class PixelMatchingBindings {
     );
   }
 
-  late final _grayscalePtr =
-      _lookup<ffi.NativeFunction<ffi.Void Function(ffi.Pointer<ffi.Uint8>, ffi.Int, ffi.Int, ffi.Bool, ffi.Pointer<ffi.Uint8>)>>(
-          'grayscale');
-  late final _grayscale = _grayscalePtr.asFunction<void Function(ffi.Pointer<ffi.Uint8>, int, int, bool, ffi.Pointer<ffi.Uint8>)>();
+  late final _grayscalePtr = _lookup<
+      ffi.NativeFunction<
+          ffi.Void Function(ffi.Pointer<ffi.UnsignedChar>, ffi.Int, ffi.Int,
+              ffi.Bool, ffi.Pointer<ffi.UnsignedChar>)>>('grayscale');
+  late final _grayscale = _grayscalePtr.asFunction<
+      void Function(ffi.Pointer<ffi.UnsignedChar>, int, int, bool,
+          ffi.Pointer<ffi.UnsignedChar>)>();
+
+  ffi.Pointer<ffi.UnsignedInt> yuv2rgb(
+    ffi.Pointer<ffi.UnsignedChar> p1,
+    ffi.Pointer<ffi.UnsignedChar> p2,
+    ffi.Pointer<ffi.UnsignedChar> p3,
+    int pr,
+    int pp,
+    int w,
+    int h,
+  ) {
+    return _yuv2rgb(
+      p1,
+      p2,
+      p3,
+      pr,
+      pp,
+      w,
+      h,
+    );
+  }
+
+  late final _yuv2rgbPtr = _lookup<
+      ffi.NativeFunction<
+          ffi.Pointer<ffi.UnsignedInt> Function(
+              ffi.Pointer<ffi.UnsignedChar>,
+              ffi.Pointer<ffi.UnsignedChar>,
+              ffi.Pointer<ffi.UnsignedChar>,
+              ffi.Int,
+              ffi.Int,
+              ffi.Int,
+              ffi.Int)>>('yuv2rgb');
+  late final _yuv2rgb = _yuv2rgbPtr.asFunction<
+      ffi.Pointer<ffi.UnsignedInt> Function(
+          ffi.Pointer<ffi.UnsignedChar>,
+          ffi.Pointer<ffi.UnsignedChar>,
+          ffi.Pointer<ffi.UnsignedChar>,
+          int,
+          int,
+          int,
+          int)>();
 }
 
 const int true1 = 1;
