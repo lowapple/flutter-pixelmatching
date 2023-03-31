@@ -1,7 +1,8 @@
 import 'dart:developer';
+import 'dart:io';
 
+import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
-
 import 'package:flutter_pixelmatching/flutter_pixelmatching.dart';
 
 void main() {
@@ -16,11 +17,48 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
+  CameraController? controller;
+  FlutterPixelMatching pixelmatching = FlutterPixelMatching();
+  bool process = false;
+  // capturing images
+  Image? capture;
+
   @override
   void initState() {
     super.initState();
-    FlutterPixelMatching().init();
-    log('pixelmatching : ${FlutterPixelMatching().version()}');
+    init();
+  }
+
+  init() async {
+    pixelmatching.init();
+    log('pixelmatching : ${pixelmatching.version()}');
+
+    final cameras = await availableCameras();
+    controller = CameraController(
+      cameras[0],
+      ResolutionPreset.medium,
+      enableAudio: false,
+      imageFormatGroup: Platform.isAndroid ? ImageFormatGroup.yuv420 : ImageFormatGroup.bgra8888,
+    );
+    controller!.initialize().then((_) {
+      if (!mounted) {
+        return;
+      }
+      controller!.startImageStream((CameraImage cameraImage) {
+        cameraStream(cameraImage);
+      });
+      setState(() {});
+    });
+  }
+
+  cameraStream(CameraImage cameraImage) {
+    if (process) return;
+    process = true;
+    final pImage = pixelmatching.grayscale(cameraImage, cameraImage.width, cameraImage.height);
+    if (pImage != null) {
+      capture = pImage;
+      setState(() {});
+    }
   }
 
   @override
@@ -30,11 +68,13 @@ class _MyAppState extends State<MyApp> {
         appBar: AppBar(
           title: const Text('OpenCV PixelMatching Plugin Sample'),
         ),
-        body: const Center(
-          child: Text(
-            'OpenCV PixelMatching',
-          ),
-        ),
+        body: capture == null
+            ? Column(
+                children: [
+                  controller != null ? CameraPreview(controller!) : Container(),
+                ],
+              )
+            : capture!,
       ),
     );
   }

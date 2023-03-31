@@ -1,13 +1,12 @@
 #pragma once
-#include "common.hpp"
-#include "debug_logger.hpp"
-
+#include <stdbool.h>
 #ifdef __cplusplus
 extern "C"
 {
 #endif
     void init();
     const char *version();
+    void grayscale(unsigned char *buf, int w, int h, bool isYuv, unsigned char *out);
 #ifdef __cplusplus
 }
 #endif

@@ -12,6 +12,7 @@ dependencies:
   ffi: ^2.0.1
   flutter:
     sdk: flutter
+  image: ^4.0.15
   plugin_platform_interface: ^2.0.2
 
 dev_dependencies:
@@ -75,8 +76,11 @@ flutter:
   # https://flutter.dev/custom-fonts/#from-packages
 
 ffigen:
+  description: 'FFI bindings for OpenCV'
   output: './lib/flutter_pixelmatching_bindings.dart'
   name: 'PixelMatchingBindings'
+  compiler-opts:
+    - '-I./include/'
   headers:
     entry-points:
       - './ios/Classes/opencv_pixelmatching.h'

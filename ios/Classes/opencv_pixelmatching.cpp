@@ -1,4 +1,7 @@
+#include <iostream>
 #include "opencv_pixelmatching.h"
+#include "common.hpp"
+#include "debug_logger.hpp"
 
 #if defined(__GNUC__)
 // Attributes to prevent 'unused' function from being removed and to make it visible
@@ -28,6 +31,22 @@ extern "C"
   const char *version()
   {
     return CV_VERSION;
+  }
+
+  // 흑백 이미지 반환
+  FUNCTION_ATTRIBUTE
+  void grayscale(uchar *buf, int w, int h, bool isYuv, uchar *out)
+  {
+    logger_info("grayscale %d %d %d", w, h, isYuv);
+    Mat myyuv(h + h / 2, w, CV_8UC1, buf);
+    Mat myrgb(h, w, CV_8UC3);
+    cvtColor(myyuv, myrgb, COLOR_YUV2BGR_NV21);
+    // cvtColor(myrgb, myrgb, COLOR_RGB2GRAY);
+
+    vector<uchar> encoded;
+    imencode(".png", myrgb, encoded);
+
+    memcpy(out, encoded.data(), encoded.size());
   }
 #ifdef __cplusplus
 }
