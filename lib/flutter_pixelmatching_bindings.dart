@@ -20,43 +20,77 @@ class PixelMatchingBindings {
           lookup)
       : _lookup = lookup;
 
-  void init() {
-    return _init();
+  bool initialize() {
+    return _initialize();
   }
 
-  late final _initPtr =
-      _lookup<ffi.NativeFunction<ffi.Void Function()>>('init');
-  late final _init = _initPtr.asFunction<void Function()>();
+  late final _initializePtr =
+      _lookup<ffi.NativeFunction<ffi.Bool Function()>>('initialize');
+  late final _initialize = _initializePtr.asFunction<bool Function()>();
 
-  ffi.Pointer<ffi.Char> version() {
-    return _version();
+  int getStatusCode() {
+    return _getStatusCode();
   }
 
-  late final _versionPtr =
-      _lookup<ffi.NativeFunction<ffi.Pointer<ffi.Char> Function()>>('version');
-  late final _version =
-      _versionPtr.asFunction<ffi.Pointer<ffi.Char> Function()>();
+  late final _getStatusCodePtr =
+      _lookup<ffi.NativeFunction<ffi.Int Function()>>('getStatusCode');
+  late final _getStatusCode = _getStatusCodePtr.asFunction<int Function()>();
 
-  ffi.Pointer<ffi.UnsignedChar> extractFeaturesAndEncodeToJpeg(
-    ffi.Pointer<ffi.UnsignedChar> arg0,
-    int arg1,
-    int arg2,
+  bool setTargetImage(
+    ffi.Pointer<ffi.UnsignedChar> image,
+    int width,
+    int height,
   ) {
-    return _extractFeaturesAndEncodeToJpeg(
-      arg0,
-      arg1,
-      arg2,
+    return _setTargetImage(
+      image,
+      width,
+      height,
     );
   }
 
-  late final _extractFeaturesAndEncodeToJpegPtr = _lookup<
+  late final _setTargetImagePtr = _lookup<
       ffi.NativeFunction<
-          ffi.Pointer<ffi.UnsignedChar> Function(ffi.Pointer<ffi.UnsignedChar>,
-              ffi.Int, ffi.Int)>>('extractFeaturesAndEncodeToJpeg');
-  late final _extractFeaturesAndEncodeToJpeg =
-      _extractFeaturesAndEncodeToJpegPtr.asFunction<
-          ffi.Pointer<ffi.UnsignedChar> Function(
-              ffi.Pointer<ffi.UnsignedChar>, int, int)>();
+          ffi.Bool Function(ffi.Pointer<ffi.UnsignedChar>, ffi.Int,
+              ffi.Int)>>('setTargetImage');
+  late final _setTargetImage = _setTargetImagePtr
+      .asFunction<bool Function(ffi.Pointer<ffi.UnsignedChar>, int, int)>();
+
+  bool setQueryImage(
+    ffi.Pointer<ffi.UnsignedChar> image,
+    int width,
+    int height,
+  ) {
+    return _setQueryImage(
+      image,
+      width,
+      height,
+    );
+  }
+
+  late final _setQueryImagePtr = _lookup<
+      ffi.NativeFunction<
+          ffi.Bool Function(ffi.Pointer<ffi.UnsignedChar>, ffi.Int,
+              ffi.Int)>>('setQueryImage');
+  late final _setQueryImage = _setQueryImagePtr
+      .asFunction<bool Function(ffi.Pointer<ffi.UnsignedChar>, int, int)>();
+
+  double getQueryConfidenceRate() {
+    return _getQueryConfidenceRate();
+  }
+
+  late final _getQueryConfidenceRatePtr =
+      _lookup<ffi.NativeFunction<ffi.Double Function()>>(
+          'getQueryConfidenceRate');
+  late final _getQueryConfidenceRate =
+      _getQueryConfidenceRatePtr.asFunction<double Function()>();
+
+  void dispose() {
+    return _dispose();
+  }
+
+  late final _disposePtr =
+      _lookup<ffi.NativeFunction<ffi.Void Function()>>('dispose');
+  late final _dispose = _disposePtr.asFunction<void Function()>();
 }
 
 const int __bool_true_false_are_defined = 1;

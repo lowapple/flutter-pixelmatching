@@ -25,6 +25,7 @@ class _MyAppState extends State<MyApp> {
   // capturing images
   imglib.Image? capture;
   CameraImage? cameraImage;
+  bool isTarget = false;
 
   @override
   void initState() {
@@ -33,8 +34,7 @@ class _MyAppState extends State<MyApp> {
   }
 
   init() async {
-    pixelmatching.init();
-    log('pixelmatching : ${pixelmatching.version()}');
+    pixelmatching.initialize();
 
     final cameras = await availableCameras();
     controller = CameraController(
@@ -78,10 +78,19 @@ class _MyAppState extends State<MyApp> {
             process = true;
             // final h = Platform.isAndroid ? cameraImage.width : cameraImage.height;
             // final w = Platform.isAndroid ? cameraImage.height : cameraImage.width;
-            capture = pixelmatching.extractFeaturesAndEncodeToJpeg(cameraImage!);
-            if (capture != null) {
-              setState(() {});
+            // capture = pixelmatching.extractFeaturesAndEncodeToJpeg(cameraImage!);
+            // if (capture != null) {
+            //   setState(() {});
+            // }
+            if (isTarget == false) {
+              pixelmatching.setTargetImage(cameraImage!);
+              isTarget = true;
+            } else {
+              pixelmatching.setQueryImage(cameraImage!);
+              final result = pixelmatching.getQueryConfidenceRate();
+              log('[pixelmatching] result : $result');
             }
+            process = false;
           },
           icon: Icon(
             Icons.camera,
