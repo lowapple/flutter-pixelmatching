@@ -33,73 +33,141 @@ extern "C"
     return CV_VERSION;
   }
 
-  // 흑백 이미지 반환
   FUNCTION_ATTRIBUTE
-  void grayscale(uchar *buf, int w, int h, bool isYuv, uchar *out)
+  uchar *extractFeaturesAndEncodeToJpeg(uchar *data, int width, int height)
   {
-    Mat myyuv(h + h / 2, w, CV_8UC1, buf);
-    Mat myrgb;
-    cvtColor(myyuv, myrgb, COLOR_YUV2RGB_NV21, 3);
-    // cvtColor(myrgb, myrgb, COLOR_RGB2GRAY);
+    // Convert uchar* data to cv::Mat
+    cv::Mat image = cv::imdecode(cv::Mat(1, width * height, CV_8UC1, data), cv::IMREAD_COLOR);
 
-    vector<uchar> encoded;
-    imencode(".jpg", myrgb, encoded);
-    memcpy(out, encoded.data(), encoded.size());
+    // Convert image to grayscale
+    cv::Mat grayImage;
+    cv::cvtColor(image, grayImage, cv::COLOR_BGR2GRAY);
+
+    // Extract keypoints and descriptors using ORB feature detector
+    cv::Ptr<cv::ORB> orbDetector = cv::ORB::create();
+    std::vector<cv::KeyPoint> keypoints;
+    cv::Mat descriptors;
+    orbDetector->detectAndCompute(grayImage, cv::Mat(), keypoints, descriptors);
+
+    // Draw keypoints on the image (for visualization purposes only)
+    cv::Mat imageWithKeypoints;
+    cv::drawKeypoints(image, keypoints, imageWithKeypoints);
+
+    // Rotate image by 90 degrees
+    cv::Mat rotatedImage;
+    cv::transpose(imageWithKeypoints, rotatedImage);
+    cv::flip(rotatedImage, rotatedImage, 1);
+
+    // Encode imageWithKeypoints to JPEG format
+    std::vector<uchar> encodedData;
+    std::vector<int> compressionParams = {cv::IMWRITE_JPEG_QUALITY, 90};
+    cv::imencode(".jpg", rotatedImage, encodedData, compressionParams);
+
+    // Convert encodedData to uchar*
+    uchar *resultData = new uchar[encodedData.size()];
+    std::copy(encodedData.begin(), encodedData.end(), resultData);
+
+    return resultData;
   }
 
-  // code from
-  // https://github.com/Hugand/camera_tutorial/blob/master/ios/Classes/converter.c
-  FUNCTION_ATTRIBUTE
-  int clamp(int lower, int higher, int val)
-  {
-    if (val < lower)
-      return 0;
-    else if (val > higher)
-      return 255;
-    else
-      return val;
-  }
+  // // 흑백 이미지 반환
+  // /**
+  //  * buf: jpeg encoded image
+  //  * w: width
+  //  * h: height
+  //  * out: grayscale image
+  //  */
+  // FUNCTION_ATTRIBUTE
+  // void grayscale(uchar *buf, int w, int h, uchar *out)
+  // {
+  //   logger_info("grayscale buf size %d", sizeof(buf));
+  //   logger_info("grayscale w %d", w);
+  //   logger_info("grayscale h %d", h);
+  //   logger_info("grayscale out size %d", sizeof(out));
 
-  FUNCTION_ATTRIBUTE
-  int getRotatedImageByteIndex(int x, int y, int rw)
-  {
-    return rw * (y + 1) - (x + 1);
-  }
+  //   cv::Mat image = cv::imdecode(cv::Mat(1, w * h, CV_8UC1, buf), cv::IMREAD_COLOR);
+  //   cv::Mat gray;
+  //   cv::cvtColor(image, gray, cv::COLOR_BGR2GRAY);
 
-  // YUV 이미지를 RGB 이미지로 변환
-  FUNCTION_ATTRIBUTE
-  uint32_t *yuv2rgb(uchar *p1, uchar *p2, uchar *p3, int pr, int pp, int w, int h)
-  {
-    int hexFF = 255;
-    int x, y, uvIndex, index;
-    int yp, up, vp;
-    int r, g, b;
-    int rt, gt, bt;
+  //   std::vector<uchar> res;
+  //   cv::imencode(".jpg", gray, res);
+  //   memcpy(out, res.data(), res.size());
+  // }
 
-    uint32_t *image = (uint32_t *)malloc(sizeof(uint32_t) * (w * h));
+  // // code from
+  // // https://github.com/Hugand/camera_tutorial/blob/master/ios/Classes/converter.c
+  // int clamp(int lower, int higher, int val)
+  // {
+  //   if (val < lower)
+  //     return 0;
+  //   else if (val > higher)
+  //     return 255;
+  //   else
+  //     return val;
+  // }
 
-    for (x = 0; x < w; x++)
-    {
-      for (y = 0; y < h; y++)
-      {
+  // int getRotatedImageByteIndex(int x, int y, int rw)
+  // {
+  //   return rw * (y + 1) - (x + 1);
+  // }
 
-        uvIndex = pp * ((int)floor(x / 2)) + pr * ((int)floor(y / 2));
-        index = y * w + x;
+  // // YUV 이미지를 RGB 이미지로 변환
+  // /*
+  //  * p1: Y
+  //  * p2: U
+  //  * p3: V
+  //  * pr: U의 row stride
+  //  * pp: U의 pixel stride
+  //  * w: width
+  //  * h: height
+  //  *
+  //  * return: RGB 이미지
+  //  */
+  // FUNCTION_ATTRIBUTE
+  // uchar *yuv2rgb(uchar *p1, uchar *p2, uchar *p3, int pr, int pp, int w, int h)
+  // {
+  //   // Convert YUV to BGR
+  //   Mat yuv(h + h / 2, w, CV_8UC1);
+  //   uchar *imageData = yuv.data;
+  //   memcpy(imageData, p1, w * h);
+  //   memcpy(imageData + w * h, p2, w * h / 4);
+  //   memcpy(imageData + w * h * 5 / 4, p3, w * h / 4);
 
-        yp = p1[index];
-        up = p2[uvIndex];
-        vp = p3[uvIndex];
-        rt = round(yp + vp * 1436 / 1024 - 179);
-        gt = round(yp - up * 46549 / 131072 + 44 - vp * 93604 / 131072 + 91);
-        bt = round(yp + up * 1814 / 1024 - 227);
-        r = clamp(0, 255, rt);
-        g = clamp(0, 255, gt);
-        b = clamp(0, 255, bt);
-        image[getRotatedImageByteIndex(y, x, h)] = (hexFF << 24) | (b << 16) | (g << 8) | r;
-      }
-    }
-    return image;
-  }
+  //   Mat bgr;
+  //   cvtColor(yuv, bgr, COLOR_YUV2BGR_NV21);
+
+  //   // Encode BGR image to JPEG
+  //   std::vector<uchar> buffer;
+  //   imencode(".jpg", bgr, buffer, {IMWRITE_JPEG_QUALITY, 80});
+
+  //   // Copy JPEG data to a new array
+  //   uchar *image = new uchar[buffer.size()];
+  //   memcpy(image, buffer.data(), buffer.size());
+
+  //   return image;
+
+  //   // Mat yuv(h + h / 2, w, CV_8UC1);
+  //   // uchar *imageData = yuv.data;
+  //   // memcpy(imageData, p1, w * h);
+  //   // memcpy(imageData + w * h, p2, w * h / 4);
+  //   // memcpy(imageData + w * h * 5 / 4, p3, w * h / 4);
+
+  //   // // Convert YUV to BGR
+  //   // cv::Mat rgb;
+  //   // cv::cvtColor(yuv, rgb, cv::COLOR_YUV2BGR_NV21);
+
+  //   // // Convert BGR to uint32_t format
+  //   // uchar *image = (uchar *)malloc(sizeof(uchar) * w * h * 3);
+  //   // uchar *rgbData = rgb.data;
+  //   // for (int i = 0; i < w * h; i++)
+  //   // {
+  //   //   image[i * 3 + 0] = rgbData[i * 3 + 0];
+  //   //   image[i * 3 + 1] = rgbData[i * 3 + 1];
+  //   //   image[i * 3 + 2] = rgbData[i * 3 + 2];
+  //   // }
+
+  //   // return image;
+  // }
 #ifdef __cplusplus
 }
 #endif

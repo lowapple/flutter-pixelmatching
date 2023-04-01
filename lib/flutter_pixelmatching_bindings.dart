@@ -37,73 +37,30 @@ class PixelMatchingBindings {
   late final _version =
       _versionPtr.asFunction<ffi.Pointer<ffi.Char> Function()>();
 
-  void grayscale(
-    ffi.Pointer<ffi.UnsignedChar> buf,
-    int w,
-    int h,
-    bool isYuv,
-    ffi.Pointer<ffi.UnsignedChar> out,
+  ffi.Pointer<ffi.UnsignedChar> extractFeaturesAndEncodeToJpeg(
+    ffi.Pointer<ffi.UnsignedChar> arg0,
+    int arg1,
+    int arg2,
   ) {
-    return _grayscale(
-      buf,
-      w,
-      h,
-      isYuv,
-      out,
+    return _extractFeaturesAndEncodeToJpeg(
+      arg0,
+      arg1,
+      arg2,
     );
   }
 
-  late final _grayscalePtr = _lookup<
+  late final _extractFeaturesAndEncodeToJpegPtr = _lookup<
       ffi.NativeFunction<
-          ffi.Void Function(ffi.Pointer<ffi.UnsignedChar>, ffi.Int, ffi.Int,
-              ffi.Bool, ffi.Pointer<ffi.UnsignedChar>)>>('grayscale');
-  late final _grayscale = _grayscalePtr.asFunction<
-      void Function(ffi.Pointer<ffi.UnsignedChar>, int, int, bool,
-          ffi.Pointer<ffi.UnsignedChar>)>();
-
-  ffi.Pointer<ffi.UnsignedInt> yuv2rgb(
-    ffi.Pointer<ffi.UnsignedChar> p1,
-    ffi.Pointer<ffi.UnsignedChar> p2,
-    ffi.Pointer<ffi.UnsignedChar> p3,
-    int pr,
-    int pp,
-    int w,
-    int h,
-  ) {
-    return _yuv2rgb(
-      p1,
-      p2,
-      p3,
-      pr,
-      pp,
-      w,
-      h,
-    );
-  }
-
-  late final _yuv2rgbPtr = _lookup<
-      ffi.NativeFunction<
-          ffi.Pointer<ffi.UnsignedInt> Function(
-              ffi.Pointer<ffi.UnsignedChar>,
-              ffi.Pointer<ffi.UnsignedChar>,
-              ffi.Pointer<ffi.UnsignedChar>,
-              ffi.Int,
-              ffi.Int,
-              ffi.Int,
-              ffi.Int)>>('yuv2rgb');
-  late final _yuv2rgb = _yuv2rgbPtr.asFunction<
-      ffi.Pointer<ffi.UnsignedInt> Function(
-          ffi.Pointer<ffi.UnsignedChar>,
-          ffi.Pointer<ffi.UnsignedChar>,
-          ffi.Pointer<ffi.UnsignedChar>,
-          int,
-          int,
-          int,
-          int)>();
+          ffi.Pointer<ffi.UnsignedChar> Function(ffi.Pointer<ffi.UnsignedChar>,
+              ffi.Int, ffi.Int)>>('extractFeaturesAndEncodeToJpeg');
+  late final _extractFeaturesAndEncodeToJpeg =
+      _extractFeaturesAndEncodeToJpegPtr.asFunction<
+          ffi.Pointer<ffi.UnsignedChar> Function(
+              ffi.Pointer<ffi.UnsignedChar>, int, int)>();
 }
+
+const int __bool_true_false_are_defined = 1;
 
 const int true1 = 1;
 
 const int false1 = 0;
-
-const int __bool_true_false_are_defined = 1;

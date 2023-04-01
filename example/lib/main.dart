@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_pixelmatching/flutter_pixelmatching.dart';
 import 'package:image/image.dart' as imglib;
 
@@ -23,6 +24,7 @@ class _MyAppState extends State<MyApp> {
   bool process = false;
   // capturing images
   imglib.Image? capture;
+  CameraImage? cameraImage;
 
   @override
   void initState() {
@@ -39,7 +41,7 @@ class _MyAppState extends State<MyApp> {
       cameras[0],
       ResolutionPreset.medium,
       enableAudio: false,
-      imageFormatGroup: Platform.isAndroid ? ImageFormatGroup.yuv420 : ImageFormatGroup.bgra8888,
+      imageFormatGroup: ImageFormatGroup.jpeg,
     );
     controller!.initialize().then((_) {
       if (!mounted) {
@@ -53,14 +55,7 @@ class _MyAppState extends State<MyApp> {
   }
 
   cameraStream(CameraImage cameraImage) {
-    if (process) return;
-    process = true;
-    // final h = Platform.isAndroid ? cameraImage.width : cameraImage.height;
-    // final w = Platform.isAndroid ? cameraImage.height : cameraImage.width;
-    capture = pixelmatching.yuv2rgb(cameraImage);
-    if (capture != null) {
-      setState(() {});
-    }
+    this.cameraImage = cameraImage;
   }
 
   @override
@@ -77,6 +72,21 @@ class _MyAppState extends State<MyApp> {
                 ],
               )
             : Image.memory(imglib.encodeJpg(capture!)),
+        floatingActionButton: IconButton(
+          onPressed: () {
+            if (process) return;
+            process = true;
+            // final h = Platform.isAndroid ? cameraImage.width : cameraImage.height;
+            // final w = Platform.isAndroid ? cameraImage.height : cameraImage.width;
+            capture = pixelmatching.extractFeaturesAndEncodeToJpeg(cameraImage!);
+            if (capture != null) {
+              setState(() {});
+            }
+          },
+          icon: Icon(
+            Icons.camera,
+          ),
+        ),
       ),
     );
   }

@@ -3,6 +3,9 @@
     "array": "cpp",
     "vector": "cpp",
     "ios": "cpp",
-    "iostream": "cpp"
+    "iostream": "cpp",
+    "string": "cpp",
+    "string_view": "cpp",
+    "iosfwd": "cpp"
   }
 }
