@@ -1,5 +1,6 @@
 #pragma once
 
+#ifdef __ANDROID__
 #include "opencv2/core/utility.hpp"
 #include "opencv2/imgcodecs.hpp"
 #include "opencv2/imgproc.hpp"
@@ -7,6 +8,19 @@
 #include "opencv2/highgui.hpp"
 #include "opencv2/features2d.hpp"
 #include "opencv2/calib3d.hpp"
+
+#endif
+
+#ifdef __APPLE__
+#include "opencv2/core/utility.hpp"
+#include "opencv2/imgcodecs.hpp"
+#include "opencv2/imgproc.hpp"
+#include "opencv2/videoio.hpp"
+#include "opencv2/highgui.hpp"
+#include "opencv2/features2d.hpp"
+#include "opencv2/calib3d.hpp"
+#endif
+
 #include "StateCode.hpp"
 
 using namespace cv;
@@ -31,7 +45,7 @@ public:
 	static constexpr int sourceImageCode = cv::COLOR_RGBA2GRAY;
 #endif
 #ifdef __APPLE__
-	static constexpr int sourceImageType = CV_8UC3;
+	static constexpr int sourceImageType = CV_8UC4;
 	static constexpr int sourceImageCode = cv::COLOR_RGBA2GRAY;
 #endif
 };

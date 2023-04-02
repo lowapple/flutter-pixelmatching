@@ -1,6 +1,7 @@
 import 'dart:developer';
 import 'dart:ffi';
 import 'dart:io';
+import 'dart:typed_data';
 import 'package:camera/camera.dart';
 import 'package:ffi/ffi.dart';
 import 'flutter_pixelmatching_bindings.dart' as bindings;
@@ -17,10 +18,23 @@ class FlutterPixelMatching {
   }
 
   Pointer<Uint8> _createImagePointer(CameraImage cameraImage) {
-    final ip = malloc.allocate<Uint8>(cameraImage.planes[0].bytes.length);
-    final ipl = ip.asTypedList(cameraImage.planes[0].bytes.length);
-    ipl.setRange(0, cameraImage.planes[0].bytes.length, cameraImage.planes[0].bytes);
-
+    late Uint8List imgBytes;
+    if (cameraImage.format.group == ImageFormatGroup.bgra8888) {
+      var img = imglib.Image.fromBytes(
+        width: cameraImage.width,
+        height: cameraImage.height,
+        bytes: cameraImage.planes[0].bytes.buffer,
+        order: imglib.ChannelOrder.bgra,
+      );
+      imgBytes = imglib.encodeJpg(img);
+    } else if (cameraImage.format.group == ImageFormatGroup.jpeg) {
+      imgBytes = cameraImage.planes[0].bytes;
+    } else {
+      throw Exception("Unsupported image format");
+    }
+    final ip = malloc.allocate<Uint8>(imgBytes.length);
+    final ipl = ip.asTypedList(imgBytes.length);
+    ipl.setRange(0, imgBytes.length, imgBytes);
     return ip;
   }
 

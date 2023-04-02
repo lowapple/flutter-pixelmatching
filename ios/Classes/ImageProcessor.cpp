@@ -2,14 +2,13 @@
 #include "ImageConverter.hpp"
 #include <thread>
 
-ImageProcessor::ImageProcessor() : buffer(new char[Constants::sourceBufferSize])
+ImageProcessor::ImageProcessor()
 {
 }
 
 ImageProcessor::~ImageProcessor()
 {
     comparators.clear();
-    delete[] buffer;
 }
 
 int ImageProcessor::getStateCode()
@@ -21,8 +20,14 @@ void ImageProcessor::initialize()
 {
     if (stateCode == StateCode::NotInitialize)
     {
+#ifdef __ANDROID__
         comparators.push_back(
-            new Comparator_BuiltInDetector<cv::SIFT, cv::DescriptorMatcher::MatcherType::FLANNBASED>());
+            new ComparatorDetector<cv::SIFT, cv::DescriptorMatcher::MatcherType::FLANNBASED>());
+#endif
+#ifdef __APPLE__
+        comparators.push_back(
+            new ComparatorDetector<cv::KAZE, cv::DescriptorMatcher::MatcherType::FLANNBASED>());
+#endif
         stateCode = StateCode::NotReadyTarget;
     }
     return;

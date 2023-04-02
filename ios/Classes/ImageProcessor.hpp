@@ -1,18 +1,8 @@
-/*
-	ImageProcessor.hpp
-
-	Image 처리 모듈을 의미하는 class pixelmatching::ImageProcessor에 대한 정의가 적혀 있는 헤더 파일입니다.
-
-	비템플릿 멤버 함수들에 대한 정의는 ImageProcessor.cpp에 있습니다.
-*/
-
 #pragma once
 
 #include "common.hpp"
 
 #include <queue>
-
-using namespace cv;
 
 class ImageProcessor
 {
@@ -27,26 +17,24 @@ private:
 
 public:
 	template <class DetectorType, DescriptorMatcher::MatcherType matcherType>
-	struct Comparator_BuiltInDetector : public Comparator_Base
+	struct ComparatorDetector : public Comparator_Base
 	{
-		Ptr<DetectorType> detector;
-		Ptr<DescriptorMatcher> matcher;
+		Ptr<DetectorType> detector;		// 키포인트 검출기 (OpenCV의 다양한 검출기 중 하나)
+		Ptr<DescriptorMatcher> matcher; // 디스크립터 매처 (OpenCV의 다양한 매칭 알고리즘 중 하나)
 
-		std::vector<KeyPoint> keypoints_target, keypoints_toQuery;
-		Mat descriptors_target, descriptors_toQuery;
+		std::vector<KeyPoint> keypointsTarget, keypointsQuery; // 검색 대상(Target) 이미지와 입력(Input) 이미지에서 검출된 키포인트
+		Mat descriptorsTarget, descriptorsQuery;			   // 검색 대상(Target) 이미지와 입력(Input) 이미지에서 추출된 디스크립터
 
-		Mat img_target, img_toQuery, img_toQuery_aligned, img_target_masked;
+		Mat imageQuery, imageQueryAligned, imageTarget, imageTargetMasked; // 입력(Input) 이미지, 입력(Input) 이미지를 검색 대상(Target) 이미지와 맞춘 이미지, 검색 대상(Target) 이미지, 검색 대상(Target) 이미지를 마스크로 처리한 이미지
+		Mat maskTarget, maskQuery;										   // 검색 대상(Target) 이미지와 입력(Input) 이미지의 마스크
 
-		Mat mask_target, mask_toQuery;
+		int rows_marker = 0, cols_marker = 0; // 마커의 행 개수, 열 개수
+		Mat translateMatrix;				  // 이미지 이동을 위한 변환 행렬
 
-		int rows_marker = 0, cols_marker = 0;
+		Ptr<CLAHE> clahe;							   // CLAHE(Contrast Limited Adaptive Histogram Equalization) 객체
+		Mat imageTargetEqualized, imageQueryEqualized; // 검색 대상(Target) 이미지에 CLAHE를 적용한 이미지, 입력(Input) 이미지를 검색 대상(Target) 이미지와 맞춘 이미지에 CLAHE를 적용한 이미지
 
-		Mat translate_matrix;
-
-		Ptr<CLAHE> clahe;
-		Mat img_target_equalized, img_toQuery_equalized;
-
-		~Comparator_BuiltInDetector()
+		~ComparatorDetector()
 		{
 			matcher->clear();
 			matcher = nullptr;
@@ -54,62 +42,61 @@ public:
 			detector = nullptr;
 		}
 
-		Comparator_BuiltInDetector() : detector(DetectorType::create()),
+		ComparatorDetector() : detector(DetectorType::create()),
 									   matcher(DescriptorMatcher::create(matcherType)),
 									   clahe(createCLAHE())
 		{
-			translate_matrix = Mat::zeros(3, 3, CV_64F);
-			translate_matrix.at<double>(0, 0) = 1;
-			translate_matrix.at<double>(1, 1) = 1;
-			translate_matrix.at<double>(2, 2) = 1;
+			translateMatrix = Mat::zeros(3, 3, CV_64F);
+			translateMatrix.at<double>(0, 0) = 1;
+			translateMatrix.at<double>(1, 1) = 1;
+			translateMatrix.at<double>(2, 2) = 1;
 		}
 
 		int Process(Mat img, bool isTargetImage) override
 		{
 			if (isTargetImage)
 			{
-				detector->detectAndCompute(img, noArray(), keypoints_target, descriptors_target);
-				matcher->add(descriptors_target);
+				detector->detectAndCompute(img, noArray(), keypointsTarget, descriptorsTarget);
+				matcher->add(descriptorsTarget);
 
-				img_target = img;
+				imageTarget = img;
 
 				return 1;
 			}
 			else
 			{
 				// 이미지에서 특징점과 디스크립터 추출
-				detector->detectAndCompute(img, noArray(), keypoints_toQuery, descriptors_toQuery);
+				detector->detectAndCompute(img, noArray(), keypointsQuery, descriptorsQuery);
 				// 디스크립터를 매처에 추가
-				matcher->add(descriptors_toQuery);
+				matcher->add(descriptorsQuery);
 
 				// 비교 대상 이미지 설정
-				img_toQuery = img;
+				imageQuery = img;
 
 				// 최근접 이웃 매칭
-				std::vector<std::vector<DMatch>> knn_matches;
-				matcher->knnMatch(descriptors_target, descriptors_toQuery, knn_matches, 2);
+				std::vector<std::vector<DMatch>> matches;
+				matcher->knnMatch(descriptorsTarget, descriptorsQuery, matches, 2);
 
 				// 거리 임계값을 기준으로 최근접 이웃 중 좋은 매칭점만 선택
-				std::vector<DMatch> chosen_matches;
-				for (auto &match : knn_matches)
+				std::vector<DMatch> chosenMatches;
+				for (auto &match : matches)
 					if (match[0].distance < Constants::threshold * match[1].distance)
-						chosen_matches.push_back(match[0]);
+						chosenMatches.push_back(match[0]);
 
 				// 선택된 매칭점이 너무 적으면 실패
-				if (chosen_matches.size() <= 4)
+				if (chosenMatches.size() <= 4)
 					return 0;
 
 				// 매칭점 좌표 추출
-				std::vector<Point2f> mappedpoints_target;
-				std::vector<Point2f> mappedpoints_toQuery;
-				for (auto &match : chosen_matches)
+				std::vector<Point2f> mappedTarget, mappedpointsQuery;
+				for (auto &match : chosenMatches)
 				{
-					mappedpoints_target.push_back(keypoints_target[match.queryIdx].pt);
-					mappedpoints_toQuery.push_back(keypoints_toQuery[match.trainIdx].pt);
+					mappedTarget.push_back(keypointsTarget[match.queryIdx].pt);
+					mappedpointsQuery.push_back(keypointsQuery[match.trainIdx].pt);
 				}
 
 				// 원근 변환 행렬 계산
-				Mat H = findHomography(mappedpoints_target, mappedpoints_toQuery, RANSAC, 1.0, noArray());
+				Mat H = findHomography(mappedTarget, mappedpointsQuery, RANSAC, 1.0, noArray());
 
 				// 원근 변환 실패시 실패 처리
 				if (H.data == 0)
@@ -120,21 +107,21 @@ public:
 				M /= M.at<double>(2, 2);
 
 				// 이미지 원근 변환
-				warpPerspective(img, img_toQuery_aligned, M, img.size());
+				warpPerspective(img, imageQueryAligned, M, img.size());
 
 				// 마스크 생성
-				mask_toQuery = Mat::ones(img.size(), CV_8U);
+				maskQuery = Mat::ones(img.size(), CV_8U);
 
 				// 비교 대상 이미지에 대응되지 않는 부분은 제거하기 위한 마스크 생성
-				img_target_masked = img_target.clone();
-				for (int row = 0; row < img_toQuery_aligned.rows; row++)
+				imageTargetMasked = imageTarget.clone();
+				for (int row = 0; row < imageQueryAligned.rows; row++)
 				{
-					for (int column = 0; column < img_toQuery_aligned.cols; column++)
+					for (int column = 0; column < imageQueryAligned.cols; column++)
 					{
-						if (img_toQuery_aligned.at<uint8_t>(row, column) == 0)
+						if (imageQueryAligned.at<uint8_t>(row, column) == 0)
 						{
-							img_target_masked.at<uint8_t>(row, column) = 0;
-							mask_toQuery.at<uint8_t>(row, column) = 0;
+							imageTargetMasked.at<uint8_t>(row, column) = 0;
+							maskQuery.at<uint8_t>(row, column) = 0;
 						}
 					}
 				}
@@ -148,13 +135,13 @@ public:
 			switch (code)
 			{
 			case 1:
-				return img_target;
+				return imageTarget;
 			case 2:
-				return img_toQuery;
+				return imageQuery;
 			case 3:
-				return img_target_masked;
+				return imageTargetMasked;
 			case 4:
-				return img_toQuery_aligned;
+				return imageQueryAligned;
 			default:
 				return {};
 			}
@@ -162,17 +149,17 @@ public:
 
 		double getQueryConfidenceRate() override
 		{
-			if (img_toQuery_aligned.empty())
+			if (imageQueryAligned.empty())
 			{
 				return -1.0;
 			}
 
 			Mat result;
 
-			clahe->apply(img_target, img_target_equalized);
-			clahe->apply(img_toQuery_aligned, img_toQuery_equalized);
+			clahe->apply(imageTarget, imageTargetEqualized);
+			clahe->apply(imageQueryAligned, imageQueryEqualized);
 
-			matchTemplate(img_target_equalized, img_toQuery_equalized, result, TemplateMatchModes::TM_CCORR_NORMED, mask_toQuery);
+			matchTemplate(imageTargetEqualized, imageQueryEqualized, result, TemplateMatchModes::TM_CCORR_NORMED, maskQuery);
 			return result.at<float>(0, 0);
 		}
 	};
@@ -184,8 +171,6 @@ public:
 	std::vector<Comparator_Base *> comparators;
 
 private:
-	char *const buffer;
-
 	ImageProcessor(const ImageProcessor &) = delete;
 	ImageProcessor(ImageProcessor &&) = delete;
 	ImageProcessor &operator=(const ImageProcessor &) = delete;
