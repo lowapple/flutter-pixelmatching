@@ -40,39 +40,43 @@ class PixelMatchingBindings {
     ffi.Pointer<ffi.UnsignedChar> image,
     int width,
     int height,
+    int rotation,
   ) {
     return _setTargetImage(
       image,
       width,
       height,
+      rotation,
     );
   }
 
   late final _setTargetImagePtr = _lookup<
       ffi.NativeFunction<
-          ffi.Bool Function(ffi.Pointer<ffi.UnsignedChar>, ffi.Int,
+          ffi.Bool Function(ffi.Pointer<ffi.UnsignedChar>, ffi.Int, ffi.Int,
               ffi.Int)>>('setTargetImage');
-  late final _setTargetImage = _setTargetImagePtr
-      .asFunction<bool Function(ffi.Pointer<ffi.UnsignedChar>, int, int)>();
+  late final _setTargetImage = _setTargetImagePtr.asFunction<
+      bool Function(ffi.Pointer<ffi.UnsignedChar>, int, int, int)>();
 
   bool setQueryImage(
     ffi.Pointer<ffi.UnsignedChar> image,
     int width,
     int height,
+    int rotation,
   ) {
     return _setQueryImage(
       image,
       width,
       height,
+      rotation,
     );
   }
 
   late final _setQueryImagePtr = _lookup<
       ffi.NativeFunction<
-          ffi.Bool Function(ffi.Pointer<ffi.UnsignedChar>, ffi.Int,
+          ffi.Bool Function(ffi.Pointer<ffi.UnsignedChar>, ffi.Int, ffi.Int,
               ffi.Int)>>('setQueryImage');
-  late final _setQueryImage = _setQueryImagePtr
-      .asFunction<bool Function(ffi.Pointer<ffi.UnsignedChar>, int, int)>();
+  late final _setQueryImage = _setQueryImagePtr.asFunction<
+      bool Function(ffi.Pointer<ffi.UnsignedChar>, int, int, int)>();
 
   double getQueryConfidenceRate() {
     return _getQueryConfidenceRate();
@@ -93,8 +97,8 @@ class PixelMatchingBindings {
   late final _dispose = _disposePtr.asFunction<void Function()>();
 }
 
-const int __bool_true_false_are_defined = 1;
-
 const int true1 = 1;
 
 const int false1 = 0;
+
+const int __bool_true_false_are_defined = 1;

@@ -77,11 +77,11 @@ flutter:
 
 ffigen:
   description: 'FFI bindings for OpenCV'
-  output: './lib/flutter_pixelmatching_bindings.dart'
+  output: './lib/src/pixelmatching_bindings.dart'
   name: 'PixelMatchingBindings'
   compiler-opts:
     - '-I./include/'
   headers:
     entry-points:
-      - './ios/Classes/opencv_pixelmatching.h'
+      - './ios/Classes/pixel_matching.h'
     

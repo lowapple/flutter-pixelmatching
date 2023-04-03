@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:isolate';
+import 'dart:typed_data';
 import 'package:camera/camera.dart';
 import 'package:flutter_pixelmatching/flutter_pixelmatching.dart';
 
@@ -13,50 +14,38 @@ class PixelMatching {
 
   var _id = 0;
   final Map<int, Completer> _completers = {};
-  //
-  bool _initialize = false;
-
-  bool get isInitialize => _initialize;
-
+  // =================
+  // Initialize Completer & Params
+  bool _isInitialize = false;
+  late Map<String, dynamic> _initParams;
+  Completer<bool>? _initCompleter;
+  // =================
   PixelMatching() {
     _initThread();
   }
 
   // *Public*
-  Future<bool> initialize() async {
-    if (_initialize) {
-      return Future.value(true);
+  Future<bool> initialize(Uint8List bytes, int width, int height, {int rotation = 0}) async {
+    if (_isInitialize) return Future.value(true);
+    // 초기화 변수 설정
+    _initParams = {
+      'image': bytes,
+      'width': width,
+      'height': height,
+      'rotation': rotation,
+    };
+    // 초기화 준비가 되어있다면 초기화 처리를 바로 진행한다.
+    if (isReady) {
+      return _initialize();
     }
-    if (!isReady) return Future.value(false);
-
-    final id = ++_id;
-    var res = Completer<bool>();
-    _completers[id] = res;
-    var req = client.Request(
-      id: id,
-      method: 'initialize',
-    );
-    _client.send(req);
-    _initialize = await res.future;
-    return _initialize;
+    // 아직 초기화 준비가 되어있지 않다면 초기화 요청을 기다리고, 초기화가 완료되면 초기화 요청을 처리한다.
+    else {
+      _initCompleter = Completer<bool>();
+      return _initCompleter!.future;
+    }
   }
 
-  Future<bool> setTargetImage(CameraImage image) async {
-    if (!isReady) return Future.value(false);
-    return _createJob(
-      client.Request(
-        id: ++_id,
-        method: 'setTargetImage',
-        params: {
-          'image': image,
-          'w': image.width,
-          'h': image.height,
-        },
-      ),
-    );
-  }
-
-  Future<double> query(CameraImage image) async {
+  Future<double> query(Uint8List image, int width, int height, {int rotation = 0}) async {
     if (!isReady) return Future.value(0.0);
     final id = ++_id;
     var res = Completer<double>();
@@ -67,8 +56,9 @@ class PixelMatching {
         method: 'query',
         params: {
           'image': image,
-          'w': image.width,
-          'h': image.height,
+          'width': width,
+          'height': height,
+          'rotation': rotation,
         },
       ),
     );
@@ -90,10 +80,15 @@ class PixelMatching {
   }
 
   // *Private*
-  Future<bool> _createJob(client.Request req) {
+  Future<bool> _initialize() async {
     final id = ++_id;
     var res = Completer<bool>();
     _completers[id] = res;
+    var req = client.Request(
+      id: id,
+      method: 'initialize',
+      params: _initParams,
+    );
     _client.send(req);
     return res.future;
   }
@@ -114,7 +109,15 @@ class PixelMatching {
     if (message is SendPort) {
       _client = message;
       isReady = true;
-      initialize();
+      // 초기화 요청이 있다면 초기화 처리 진행
+      if (_initCompleter != null) {
+        _initialize().then(
+          (value) {
+            _initCompleter!.complete(value);
+            _initCompleter = null;
+          },
+        );
+      }
       return;
     }
 

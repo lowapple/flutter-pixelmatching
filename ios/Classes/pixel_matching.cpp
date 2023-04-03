@@ -40,27 +40,39 @@ extern "C"
   }
 
   FUNCTION_ATTRIBUTE
-  bool setTargetImage(unsigned char *target, int width, int height)
+  bool setTargetImage(unsigned char *bytes, int width, int height, int rotation)
   {
     if (processor == nullptr)
     {
       return false;
     }
     // Decode images from JPEG-encoded targets
-    cv::Mat imageTarget = cv::imdecode(cv::Mat(1, width * height * 3, CV_8UC1, target), cv::IMREAD_COLOR);
-    return processor->setSourceImage(imageTarget);
+    cv::Mat image = cv::imdecode(cv::Mat(1, width * height * 3, CV_8UC1, bytes), cv::IMREAD_COLOR);
+    if (rotation == 90)
+      cv::rotate(image, image, cv::ROTATE_90_CLOCKWISE);
+    else if (rotation == 180)
+      cv::rotate(image, image, cv::ROTATE_180);
+    else if (rotation == 270)
+      cv::rotate(image, image, cv::ROTATE_90_COUNTERCLOCKWISE);
+    return processor->setSourceImage(image);
   }
 
   FUNCTION_ATTRIBUTE
-  bool setQueryImage(unsigned char *query, int width, int height)
+  bool setQueryImage(unsigned char *bytes, int width, int height, int rotation)
   {
     if (processor == nullptr)
     {
       return false;
     }
     // Decode images from JPEG-encoded queries
-    cv::Mat imageQuery = cv::imdecode(cv::Mat(1, width * height * 3, CV_8UC1, query), cv::IMREAD_COLOR);
-    return processor->setQueryImage(imageQuery);
+    cv::Mat image = cv::imdecode(cv::Mat(1, width * height * 3, CV_8UC1, bytes), cv::IMREAD_COLOR);
+    if (rotation == 90)
+      cv::rotate(image, image, cv::ROTATE_90_CLOCKWISE);
+    else if (rotation == 180)
+      cv::rotate(image, image, cv::ROTATE_180);
+    else if (rotation == 270)
+      cv::rotate(image, image, cv::ROTATE_90_COUNTERCLOCKWISE);
+    return processor->setQueryImage(image);
   }
 
   FUNCTION_ATTRIBUTE

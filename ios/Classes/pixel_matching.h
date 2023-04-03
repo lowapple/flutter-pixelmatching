@@ -12,10 +12,10 @@ extern "C"
     int getStatusCode();
 
     // 대상 이미지 등록 함수
-    bool setTargetImage(unsigned char *image, int width, int height);
+    bool setTargetImage(unsigned char *image, int width, int height, int rotation);
 
     // 비교 이미지 등록 함수
-    bool setQueryImage(unsigned char *image, int width, int height);
+    bool setQueryImage(unsigned char *image, int width, int height, int rotation);
 
     // 이미지 비교 함수
     double getQueryConfidenceRate();

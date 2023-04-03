@@ -1,5 +1,6 @@
 import 'dart:developer';
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
@@ -29,6 +30,7 @@ class _MyAppState extends State<MyApp> {
 
   bool _isRunning = false;
   int _lastRun = 0;
+  int rotation = 0;
 
   @override
   void initState() {
@@ -46,8 +48,10 @@ class _MyAppState extends State<MyApp> {
 
   init() async {
     final cameras = await availableCameras();
+    final camera = cameras[0];
+    rotation = Platform.isAndroid ? camera.sensorOrientation : 0;
     controller = CameraController(
-      cameras[0],
+      camera,
       ResolutionPreset.medium,
       enableAudio: false,
       imageFormatGroup: Platform.isAndroid ? ImageFormatGroup.jpeg : ImageFormatGroup.bgra8888,
@@ -68,12 +72,28 @@ class _MyAppState extends State<MyApp> {
     if (_lastRun == 0) {
       _lastRun = DateTime.now().millisecondsSinceEpoch;
     }
-
     if (_isRunning || !mounted || DateTime.now().millisecondsSinceEpoch - _lastRun < 30) return;
     final status = await matching?.getState();
     if (status == PixelMatchingState.readyToProcess) {
       _isRunning = true;
-      var res = await matching?.query(cameraImage);
+      Uint8List bytes;
+      if (Platform.isAndroid) {
+        bytes = cameraImage.planes[0].bytes;
+      } else {
+        var img = imglib.Image.fromBytes(
+          width: cameraImage.width,
+          height: cameraImage.height,
+          bytes: cameraImage.planes[0].bytes.buffer,
+          order: imglib.ChannelOrder.bgra,
+        );
+        bytes = imglib.encodeJpg(img);
+      }
+      var res = await matching?.query(
+        bytes,
+        cameraImage.width,
+        cameraImage.height,
+        rotation: rotation,
+      );
       print(res);
       _isRunning = false;
     }
@@ -103,15 +123,27 @@ class _MyAppState extends State<MyApp> {
                 await matching?.initialize();
               }
               if (state == PixelMatchingState.waitingForTarget) {
-                matching?.setTargetImage(cameraImage!).then(
-                  (value) {
-                    setState(
-                      () {
-                        isTarget = true;
-                      },
-                    );
-                  },
+                Uint8List bytes;
+                if (Platform.isAndroid) {
+                  bytes = cameraImage!.planes[0].bytes;
+                } else {
+                  var img = imglib.Image.fromBytes(
+                    width: cameraImage!.width,
+                    height: cameraImage!.height,
+                    bytes: cameraImage!.planes[0].bytes.buffer,
+                    order: imglib.ChannelOrder.bgra,
+                  );
+                  bytes = imglib.encodeJpg(img);
+                }
+                var res = await matching?.setTargetImage(
+                  bytes,
+                  cameraImage!.width,
+                  cameraImage!.height,
+                  rotation: rotation,
                 );
+                setState(() {
+                  isTarget = true;
+                });
                 return;
               }
             },

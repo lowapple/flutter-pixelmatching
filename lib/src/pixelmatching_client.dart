@@ -61,24 +61,30 @@ void _handleMessage(message) {
       case "initialize":
         _client.initialize();
         var status = _client.getState();
-        _caller.send(Response(id: message.id, data: status == PixelMatchingState.waitingForTarget));
+        // initialize
+        if (status != PixelMatchingState.waitingForTarget) {
+          _caller.send(Response(id: message.id, data: false));
+          return;
+        }
+        // set target image
+        final image = message.params['image'] as Uint8List;
+        final w = message.params['width'] as int;
+        final h = message.params['height'] as int;
+        final rotation = message.params['rotation'] as int;
+        final res = _client.setTargetImageFromBytes(image, w, h, rotation: rotation);
+        _caller.send(Response(id: message.id, data: res));
         break;
       case "getState":
         var status = _client.getState();
         _caller.send(Response(id: message.id, data: status));
         break;
-      case "setTargetImage":
-        if (message.params is Map<String, dynamic>) {
-          final image = message.params['image'] as CameraImage;
-          _client.setTargetImage(image);
-          var status = _client.getState();
-          _caller.send(Response(id: message.id, data: status == PixelMatchingState.readyToProcess));
-        }
-        break;
       case "query":
         if (message.params is Map<String, dynamic>) {
-          final image = message.params['image'] as CameraImage;
-          final res = _client.query(image);
+          final image = message.params['image'] as Uint8List;
+          final width = message.params['width'] as int;
+          final height = message.params['height'] as int;
+          final rotation = message.params['rotation'] as int;
+          final res = _client.query(image, width, height, rotation: rotation);
           _caller.send(Response(id: message.id, data: res));
         }
         break;
@@ -107,45 +113,52 @@ class _PixelMatchingClient {
   }
 
   // Create Image Pointer from CameraImage
-  Pointer<Uint8> _createImagePointer(CameraImage cameraImage) {
-    late Uint8List imgBytes;
-    if (cameraImage.format.group == ImageFormatGroup.bgra8888) {
-      var img = imglib.Image.fromBytes(
-        width: cameraImage.width,
-        height: cameraImage.height,
-        bytes: cameraImage.planes[0].bytes.buffer,
-        order: imglib.ChannelOrder.bgra,
-      );
-      imgBytes = imglib.encodeJpg(img);
-    } else if (cameraImage.format.group == ImageFormatGroup.jpeg) {
-      // rotate image 90 degree
-      imgBytes = cameraImage.planes[0].bytes;
-    } else {
-      throw Exception("Unsupported image format");
-    }
-    return _createImagePointerFromBytes(imgBytes);
-  }
+  // Pointer<Uint8> _createImagePointer(CameraImage cameraImage) {
+  //   late Uint8List imgBytes;
+  //   if (cameraImage.format.group == ImageFormatGroup.bgra8888) {
+  //     var img = imglib.Image.fromBytes(
+  //       width: cameraImage.width,
+  //       height: cameraImage.height,
+  //       bytes: cameraImage.planes[0].bytes.buffer,
+  //       order: imglib.ChannelOrder.bgra,
+  //     );
+  //     imgBytes = imglib.encodeJpg(img);
+  //   } else if (cameraImage.format.group == ImageFormatGroup.jpeg) {
+  //     // rotate image 90 degree
+  //     imgBytes = cameraImage.planes[0].bytes;
+  //   } else {
+  //     throw Exception("Unsupported image format");
+  //   }
+  //   return _createImagePointerFromBytes(imgBytes);
+  // }
 
   // Set Marker Image from Uint8List
-  bool setTargetImageFromBytes(Uint8List bytes, int width, int height) {
+  bool setTargetImageFromBytes(Uint8List bytes, int w, int h, {int rotation = 0}) {
     final image = _createImagePointerFromBytes(bytes);
-    final res = binding.setTargetImage(image.cast(), width, height);
+    final res = binding.setTargetImage(image.cast(), w, h, rotation);
     return res;
   }
 
-  // Set Marker Image from CameraImage
-  bool setTargetImage(CameraImage cameraImage) {
-    final image = _createImagePointer(cameraImage);
-    final res = binding.setTargetImage(image.cast(), cameraImage.width, cameraImage.height);
-    return res;
-  }
-
-  double query(CameraImage cameraImage) {
-    final image = _createImagePointer(cameraImage);
-    final res = binding.setQueryImage(image.cast(), cameraImage.width, cameraImage.height);
+  double query(Uint8List bytes, int w, int h, {int rotation = 0}) {
+    final image = _createImagePointerFromBytes(bytes);
+    final res = binding.setQueryImage(image.cast(), w, h, rotation);
     _lastQueryRes = res;
     return getQueryConfidenceRate();
   }
+
+  // Set Marker Image from CameraImage
+  // bool setTargetImage(CameraImage cameraImage) {
+  //   final image = _createImagePointer(cameraImage);
+  //   final res = binding.setTargetImage(image.cast(), cameraImage.width, cameraImage.height);
+  //   return res;
+  // }
+
+  // double query(CameraImage cameraImage) {
+  //   final image = _createImagePointer(cameraImage);
+  //   final res = binding.setQueryImage(image.cast(), cameraImage.width, cameraImage.height);
+  //   _lastQueryRes = res;
+  //   return getQueryConfidenceRate();
+  // }
 
   PixelMatchingState getState() {
     final state = binding.getStatusCode();
