@@ -1,80 +1,144 @@
-import 'dart:ffi';
-import 'dart:io';
-import 'dart:typed_data';
+import 'dart:async';
+import 'dart:isolate';
 import 'package:camera/camera.dart';
-import 'package:ffi/ffi.dart';
-import 'pixelmatching_state.dart';
-import 'pixelmatching_bindings.dart' as bindings;
-import 'package:image/image.dart' as imglib;
+import 'package:flutter_pixelmatching/flutter_pixelmatching.dart';
 
-final DynamicLibrary _lib = Platform.isAndroid ? DynamicLibrary.open("libopencv_pixelmatching.so") : DynamicLibrary.process();
+import 'pixelmatching_client.dart' as client;
 
-class FlutterPixelMatching {
-  final binding = bindings.PixelMatchingBindings(_lib);
-  var _lastQueryRes = false;
+class PixelMatching {
+  bool isReady = false;
+  //
+  late Isolate _thread;
+  late SendPort _client;
 
-  void initialize() {
-    binding.initialize();
+  var _id = 0;
+  final Map<int, Completer> _completers = {};
+  //
+  bool _initialize = false;
+
+  bool get isInitialize => _initialize;
+
+  PixelMatching() {
+    _initThread();
   }
 
-  Pointer<Uint8> _createImagePointer(CameraImage cameraImage) {
-    late Uint8List imgBytes;
-    if (cameraImage.format.group == ImageFormatGroup.bgra8888) {
-      var img = imglib.Image.fromBytes(
-        width: cameraImage.width,
-        height: cameraImage.height,
-        bytes: cameraImage.planes[0].bytes.buffer,
-        order: imglib.ChannelOrder.bgra,
-      );
-      imgBytes = imglib.encodeJpg(img);
-    } else if (cameraImage.format.group == ImageFormatGroup.jpeg) {
-      // rotate image 90 degree
-      imgBytes = cameraImage.planes[0].bytes;
-    } else {
-      throw Exception("Unsupported image format");
+  // *Public*
+  Future<bool> initialize() async {
+    if (_initialize) {
+      return Future.value(true);
     }
-    final ip = malloc.allocate<Uint8>(imgBytes.length);
-    final ipl = ip.asTypedList(imgBytes.length);
-    ipl.setRange(0, imgBytes.length, imgBytes);
-    return ip;
+    if (!isReady) return Future.value(false);
+
+    final id = ++_id;
+    var res = Completer<bool>();
+    _completers[id] = res;
+    var req = client.Request(
+      id: id,
+      method: 'initialize',
+    );
+    _client.send(req);
+    _initialize = await res.future;
+    return _initialize;
   }
 
-  bool setTargetImage(CameraImage cameraImage) {
-    final image = _createImagePointer(cameraImage);
-    final res = binding.setTargetImage(image.cast(), cameraImage.width, cameraImage.height);
-    return res;
+  Future<bool> setTargetImage(CameraImage image) async {
+    if (!isReady) return Future.value(false);
+    return _createJob(
+      client.Request(
+        id: ++_id,
+        method: 'setTargetImage',
+        params: {
+          'image': image,
+          'w': image.width,
+          'h': image.height,
+        },
+      ),
+    );
   }
 
-  bool setQueryImage(CameraImage cameraImage) {
-    final image = _createImagePointer(cameraImage);
-    final res = binding.setQueryImage(image.cast(), cameraImage.width, cameraImage.height);
-    _lastQueryRes = res;
-    return res;
+  Future<double> query(CameraImage image) async {
+    if (!isReady) return Future.value(0.0);
+    final id = ++_id;
+    var res = Completer<double>();
+    _completers[id] = res;
+    _client.send(
+      client.Request(
+        id: id,
+        method: 'query',
+        params: {
+          'image': image,
+          'w': image.width,
+          'h': image.height,
+        },
+      ),
+    );
+    return res.future;
   }
 
-  PixelMatchingState getState() {
-    final state = binding.getStatusCode();
-    if (state == -1) {
-      return PixelMatchingState.notInitialized;
-    } else if (state == 0) {
-      return PixelMatchingState.waitingForTarget;
-    } else if (state == 1) {
-      return PixelMatchingState.readyToProcess;
-    } else if (state == 2) {
-      return PixelMatchingState.processing;
-    } else {
-      throw Exception("Unknown state");
+  Future<PixelMatchingState> getState() async {
+    if (!isReady) return Future.value(PixelMatchingState.notInitialized);
+    final id = ++_id;
+    var res = Completer<PixelMatchingState>();
+    _completers[id] = res;
+    _client.send(
+      client.Request(
+        id: id,
+        method: 'getState',
+      ),
+    );
+    return res.future;
+  }
+
+  // *Private*
+  Future<bool> _createJob(client.Request req) {
+    final id = ++_id;
+    var res = Completer<bool>();
+    _completers[id] = res;
+    _client.send(req);
+    return res.future;
+  }
+
+  void _initThread() async {
+    final fromThread = ReceivePort();
+    fromThread.listen(_handleMessage, onDone: () {
+      isReady = false;
+    });
+
+    _thread = await Isolate.spawn(
+      client.init,
+      fromThread.sendPort,
+    );
+  }
+
+  void _handleMessage(message) {
+    if (message is SendPort) {
+      _client = message;
+      isReady = true;
+      initialize();
+      return;
+    }
+
+    if (message is client.Response) {
+      final id = message.id;
+      _completers[id]?.complete(message.data);
+      _completers.remove(id);
+      return;
     }
   }
 
-  // 0.87 정도 나오면 일치하는 것으로 판단해도 됨
-  double getQueryConfidenceRate() {
-    if (_lastQueryRes) {
-      return binding.getQueryConfidenceRate();
-    } else {
-      return 0.0;
-    }
+  void dispose() async {
+    if (isReady == false) return;
+    final id = ++_id;
+    final res = Completer();
+    _completers[id] = res;
+    final req = client.Request(
+      id: id,
+      method: 'dispose',
+      params: null,
+    );
+    _client.send(req);
+    await res.future;
+    _thread.kill();
+    isReady = false;
   }
-
-  void dispose() => binding.dispose();
 }

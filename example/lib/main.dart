@@ -20,22 +20,31 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
   CameraController? controller;
-  FlutterPixelMatching pixelmatching = FlutterPixelMatching();
+  PixelMatching? matching;
   bool process = false;
   // capturing images
   imglib.Image? capture;
   CameraImage? cameraImage;
   bool isTarget = false;
 
+  bool _isRunning = false;
+  int _lastRun = 0;
+
   @override
   void initState() {
-    super.initState();
+    matching = PixelMatching();
     init();
+    super.initState();
+  }
+
+  @override
+  dispose() {
+    matching?.dispose();
+    matching = null;
+    super.dispose();
   }
 
   init() async {
-    pixelmatching.initialize();
-
     final cameras = await availableCameras();
     controller = CameraController(
       cameras[0],
@@ -54,41 +63,61 @@ class _MyAppState extends State<MyApp> {
     });
   }
 
-  cameraStream(CameraImage cameraImage) {
+  cameraStream(CameraImage cameraImage) async {
     this.cameraImage = cameraImage;
+    if (_lastRun == 0) {
+      _lastRun = DateTime.now().millisecondsSinceEpoch;
+    }
+
+    if (_isRunning || !mounted || DateTime.now().millisecondsSinceEpoch - _lastRun < 30) return;
+    final status = await matching?.getState();
+    if (status == PixelMatchingState.readyToProcess) {
+      _isRunning = true;
+      var res = await matching?.query(cameraImage);
+      print(res);
+      _isRunning = false;
+    }
+    _lastRun = DateTime.now().millisecondsSinceEpoch;
   }
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      home: Scaffold(
-        appBar: AppBar(
-          title: const Text('OpenCV PixelMatching Plugin Sample'),
-        ),
-        body: capture == null
-            ? Column(
-                children: [
-                  controller != null ? CameraPreview(controller!) : Container(),
-                ],
-              )
-            : Image.memory(imglib.encodeJpg(capture!)),
-        floatingActionButton: IconButton(
-          onPressed: () {
-            if (process) return;
-            process = true;
-            var state = pixelmatching.getState();
-            if (state == PixelMatchingState.waitingForTarget) {
-              pixelmatching.setTargetImage(cameraImage!);
-            }
-            if (state == PixelMatchingState.readyToProcess) {
-              pixelmatching.setQueryImage(cameraImage!);
-              final confidence = pixelmatching.getQueryConfidenceRate();
-              log('[pixelmatching] result : $confidence');
-            }
-            process = false;
-          },
-          icon: const Icon(
-            Icons.camera,
+      home: WillPopScope(
+        onWillPop: () async {
+          controller?.stopImageStream();
+          controller?.dispose();
+          controller = null;
+
+          return true;
+        },
+        child: Scaffold(
+          appBar: AppBar(
+            title: const Text('OpenCV PixelMatching Plugin Sample'),
+          ),
+          body: controller != null ? CameraPreview(controller!) : Container(),
+          floatingActionButton: IconButton(
+            onPressed: () async {
+              final state = await matching?.getState();
+              if (state == PixelMatchingState.notInitialized) {
+                await matching?.initialize();
+              }
+              if (state == PixelMatchingState.waitingForTarget) {
+                matching?.setTargetImage(cameraImage!).then(
+                  (value) {
+                    setState(
+                      () {
+                        isTarget = true;
+                      },
+                    );
+                  },
+                );
+                return;
+              }
+            },
+            icon: const Icon(
+              Icons.camera,
+            ),
           ),
         ),
       ),

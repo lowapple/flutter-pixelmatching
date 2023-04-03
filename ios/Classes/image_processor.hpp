@@ -81,11 +81,17 @@ public:
 					logger_info("Process() - knnMatch");
 					matcher->knnMatch(descriptorsTarget, descriptorsQuery, matches, 2);
 				}
-				catch (const std::out_of_range &e)
+				catch (const cv::Exception &e)
 				{
-					logger_error("Process() - knnMatch", "out_of_range exception: %s", e.what());
+					logger_error("Process() - knnMatch", "cv::Exception: %s", e.what());
 					return 0;
 				}
+				catch (const std::exception &e)
+				{
+					logger_error("Process() - knnMatch", "std::exception: %s", e.what());
+					return 0;
+				}
+
 				// 거리 임계값을 기준으로 최근접 이웃 중 좋은 매칭점만 선택
 				std::vector<DMatch> chosenMatches;
 				for (auto &match : matches)
