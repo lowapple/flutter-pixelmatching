@@ -11,10 +11,9 @@ add_library(
     
     SHARED 
     
-    
     ../ios/Classes/debug_logger.cpp
-    ../ios/Classes/ImageConverter.cpp
-    ../ios/Classes/ImageProcessor.cpp
-    ../ios/Classes/opencv_pixelmatching.cpp
+    ../ios/Classes/image_converter.cpp
+    ../ios/Classes/image_processor.cpp
+    ../ios/Classes/pixel_matching.cpp
     )
 target_link_libraries(opencv_pixelmatching lib_opencv ${log-lib})

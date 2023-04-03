@@ -1,7 +1,7 @@
 #pragma once
 
 #include "common.hpp"
-
+#include "debug_logger.hpp"
 #include <queue>
 
 class ImageProcessor
@@ -43,8 +43,8 @@ public:
 		}
 
 		ComparatorDetector() : detector(DetectorType::create()),
-									   matcher(DescriptorMatcher::create(matcherType)),
-									   clahe(createCLAHE())
+							   matcher(DescriptorMatcher::create(matcherType)),
+							   clahe(createCLAHE())
 		{
 			translateMatrix = Mat::zeros(3, 3, CV_64F);
 			translateMatrix.at<double>(0, 0) = 1;
@@ -54,17 +54,18 @@ public:
 
 		int Process(Mat img, bool isTargetImage) override
 		{
+			logger_info("Process()");
 			if (isTargetImage)
 			{
+				logger_info("Process() - isTargetImage");
 				detector->detectAndCompute(img, noArray(), keypointsTarget, descriptorsTarget);
 				matcher->add(descriptorsTarget);
-
 				imageTarget = img;
-
 				return 1;
 			}
 			else
 			{
+				logger_info("Process() - isQueryImage");
 				// 이미지에서 특징점과 디스크립터 추출
 				detector->detectAndCompute(img, noArray(), keypointsQuery, descriptorsQuery);
 				// 디스크립터를 매처에 추가
@@ -75,8 +76,16 @@ public:
 
 				// 최근접 이웃 매칭
 				std::vector<std::vector<DMatch>> matches;
-				matcher->knnMatch(descriptorsTarget, descriptorsQuery, matches, 2);
-
+				try
+				{
+					logger_info("Process() - knnMatch");
+					matcher->knnMatch(descriptorsTarget, descriptorsQuery, matches, 2);
+				}
+				catch (const std::out_of_range &e)
+				{
+					logger_error("Process() - knnMatch", "out_of_range exception: %s", e.what());
+					return 0;
+				}
 				// 거리 임계값을 기준으로 최근접 이웃 중 좋은 매칭점만 선택
 				std::vector<DMatch> chosenMatches;
 				for (auto &match : matches)
@@ -164,7 +173,7 @@ public:
 		}
 	};
 
-	StateCode stateCode = StateCode::NotInitialize;
+	StateCode stateCode = StateCode::NotInitialized;
 	double confidence_rate = -1.0;
 
 public:

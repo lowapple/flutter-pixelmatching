@@ -1,6 +1,8 @@
+// reference : https://stackoverflow.com/questions/1644868/c-define-macro-for-debug-printing
 #pragma once
 
 #include <stdio.h>
+#include <string>
 
 extern void _debug_log(int level, const char *func, int line, const char *format, ...);
 

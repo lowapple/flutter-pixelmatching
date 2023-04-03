@@ -2,7 +2,7 @@
 
 #include "common.hpp"
 
-namespace imageconverter
+namespace image_converter
 {
 	cv::Mat process(cv::Mat img);
 }

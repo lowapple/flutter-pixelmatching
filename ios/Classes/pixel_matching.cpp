@@ -1,6 +1,6 @@
-#include "opencv_pixelmatching.h"
+#include "pixel_matching.h"
 #include "debug_logger.hpp"
-#include "ImageProcessor.hpp"
+#include "image_processor.hpp"
 
 #if defined(__GNUC__)
 // Attributes to prevent 'unused' function from being removed and to make it visible

@@ -1,5 +1,5 @@
-#include "ImageProcessor.hpp"
-#include "ImageConverter.hpp"
+#include "image_processor.hpp"
+#include "image_converter.hpp"
 #include <thread>
 
 ImageProcessor::ImageProcessor()
@@ -18,48 +18,52 @@ int ImageProcessor::getStateCode()
 
 void ImageProcessor::initialize()
 {
-    if (stateCode == StateCode::NotInitialize)
+    if (stateCode == StateCode::NotInitialized)
     {
 #ifdef __ANDROID__
+        logger_info("ImageProcessor", "initialize", "SIFT");
         comparators.push_back(
             new ComparatorDetector<cv::SIFT, cv::DescriptorMatcher::MatcherType::FLANNBASED>());
 #endif
 #ifdef __APPLE__
+        logger_info("ImageProcessor", "initialize", "KAZE");
         comparators.push_back(
             new ComparatorDetector<cv::KAZE, cv::DescriptorMatcher::MatcherType::FLANNBASED>());
 #endif
-        stateCode = StateCode::NotReadyTarget;
+        stateCode = StateCode::WaitingForTarget;
     }
     return;
 }
 
 bool ImageProcessor::setSourceImage(Mat img)
 {
-    if ((stateCode & StateCode::NotReadyTarget) != StateCode::NotReadyTarget)
+    StateCode oldState = stateCode;
+    if ((stateCode & StateCode::WaitingForTarget) != StateCode::WaitingForTarget)
     {
         return false;
     }
     int res = process(img, true);
-    stateCode = StateCode::ReadyToProcess;
-
     if (res == 0)
     {
+        stateCode = oldState;
         return false;
     }
+    stateCode = StateCode::ReadyToProcess;
     return true;
 }
 
 bool ImageProcessor::setQueryImage(Mat img)
 {
+    StateCode oldState = stateCode;
     if ((stateCode & StateCode::ReadyToProcess) != StateCode::ReadyToProcess)
     {
         return false;
     }
     confidence_rate = -1.0;
-    stateCode = StateCode::Processing;
     int res = process(img, true);
     if (res == 0)
     {
+        stateCode = oldState;
         return false;
     }
     stateCode = StateCode::ReadyToProcess;
@@ -75,18 +79,23 @@ int ImageProcessor::process(cv::Mat img, bool needConvert)
 {
     cv::Mat img_converted;
 
+    logger_info("ImageProcessor", "process", "Start process image.");
+
     if (needConvert)
     {
-        img_converted = imageconverter::process(img);
+        logger_info("ImageProcessor", "process", "Convert image.");
+        img_converted = image_converter::process(img);
     }
     else
     {
+        logger_info("ImageProcessor", "process", "No need to convert image.");
         img_converted = img.clone();
     }
 
     // 타켓 설정
-    if (stateCode == StateCode::NotReadyTarget)
+    if (stateCode == StateCode::WaitingForTarget)
     {
+        stateCode = StateCode::Processing;
         for (auto comparator : comparators)
         {
             if (comparator->Process(img_converted, true) == 0)
@@ -99,6 +108,7 @@ int ImageProcessor::process(cv::Mat img, bool needConvert)
     // 쿼리 설정및 비교
     else
     {
+        stateCode = StateCode::Processing;
         for (auto comparator : comparators)
         {
             if (comparator->Process(img_converted, false) == 0)
@@ -106,7 +116,6 @@ int ImageProcessor::process(cv::Mat img, bool needConvert)
                 return 0;
             }
         }
-
         return 1;
     }
 }

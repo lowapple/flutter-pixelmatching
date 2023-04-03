@@ -3,9 +3,9 @@ import 'dart:io';
 
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:flutter_pixelmatching/flutter_pixelmatching.dart';
+// ignore: depend_on_referenced_packages
 import 'package:image/image.dart' as imglib;
+import 'package:flutter_pixelmatching/flutter_pixelmatching.dart';
 
 void main() {
   runApp(const MyApp());
@@ -41,7 +41,7 @@ class _MyAppState extends State<MyApp> {
       cameras[0],
       ResolutionPreset.medium,
       enableAudio: false,
-      imageFormatGroup: ImageFormatGroup.jpeg,
+      imageFormatGroup: Platform.isAndroid ? ImageFormatGroup.jpeg : ImageFormatGroup.bgra8888,
     );
     controller!.initialize().then((_) {
       if (!mounted) {
@@ -76,23 +76,18 @@ class _MyAppState extends State<MyApp> {
           onPressed: () {
             if (process) return;
             process = true;
-            // final h = Platform.isAndroid ? cameraImage.width : cameraImage.height;
-            // final w = Platform.isAndroid ? cameraImage.height : cameraImage.width;
-            // capture = pixelmatching.extractFeaturesAndEncodeToJpeg(cameraImage!);
-            // if (capture != null) {
-            //   setState(() {});
-            // }
-            if (isTarget == false) {
+            var state = pixelmatching.getState();
+            if (state == PixelMatchingState.waitingForTarget) {
               pixelmatching.setTargetImage(cameraImage!);
-              isTarget = true;
-            } else {
+            }
+            if (state == PixelMatchingState.readyToProcess) {
               pixelmatching.setQueryImage(cameraImage!);
-              final result = pixelmatching.getQueryConfidenceRate();
-              log('[pixelmatching] result : $result');
+              final confidence = pixelmatching.getQueryConfidenceRate();
+              log('[pixelmatching] result : $confidence');
             }
             process = false;
           },
-          icon: Icon(
+          icon: const Icon(
             Icons.camera,
           ),
         ),

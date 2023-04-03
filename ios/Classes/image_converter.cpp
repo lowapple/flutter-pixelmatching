@@ -1,6 +1,6 @@
-#include "ImageConverter.hpp"
+#include "image_converter.hpp"
 
-namespace imageconverter
+namespace image_converter
 {
 	cv::Mat process(cv::Mat img)
 	{

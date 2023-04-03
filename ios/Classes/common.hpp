@@ -21,7 +21,7 @@
 #include "opencv2/calib3d.hpp"
 #endif
 
-#include "StateCode.hpp"
+#include "state_code.hpp"
 
 using namespace cv;
 
