@@ -1,4 +1,3 @@
-import 'dart:developer';
 import 'dart:io';
 import 'dart:typed_data';
 
@@ -120,7 +119,7 @@ class _MyAppState extends State<MyApp> {
             onPressed: () async {
               final state = await matching?.getState();
               if (state == PixelMatchingState.notInitialized) {
-                await matching?.initialize();
+                // await matching?.initialize();
               }
               if (state == PixelMatchingState.waitingForTarget) {
                 Uint8List bytes;
@@ -135,12 +134,6 @@ class _MyAppState extends State<MyApp> {
                   );
                   bytes = imglib.encodeJpg(img);
                 }
-                var res = await matching?.setTargetImage(
-                  bytes,
-                  cameraImage!.width,
-                  cameraImage!.height,
-                  rotation: rotation,
-                );
                 setState(() {
                   isTarget = true;
                 });

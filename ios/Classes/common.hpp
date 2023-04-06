@@ -46,6 +46,6 @@ public:
 #endif
 #ifdef __APPLE__
 	static constexpr int sourceImageType = CV_8UC4;
-	static constexpr int sourceImageCode = cv::COLOR_RGBA2GRAY;
+	static constexpr int sourceImageCode = cv::COLOR_BGRA2GRAY;
 #endif
 };

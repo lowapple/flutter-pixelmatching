@@ -21,7 +21,7 @@ namespace image_converter
 					}
 				}
 			}
-
+			img.release();
 			return gray; // 처리된 이미지를 반환합니다.
 		}
 
@@ -53,6 +53,10 @@ namespace image_converter
 				}
 			}
 		}
+
+		// Release unused memory
+		gray.release();
+		img.release();
 
 		return result; // 처리된 이미지를 반환합니다.
 	}

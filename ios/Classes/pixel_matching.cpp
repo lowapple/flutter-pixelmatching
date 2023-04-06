@@ -48,13 +48,26 @@ extern "C"
     }
     // Decode images from JPEG-encoded targets
     cv::Mat image = cv::imdecode(cv::Mat(1, width * height * 3, CV_8UC1, bytes), cv::IMREAD_COLOR);
+
     if (rotation == 90)
-      cv::rotate(image, image, cv::ROTATE_90_CLOCKWISE);
+    {
+      cv::transpose(image, image);
+      cv::flip(image, image, 1);
+    }
     else if (rotation == 180)
-      cv::rotate(image, image, cv::ROTATE_180);
+    {
+      cv::transpose(image, image);
+      cv::flip(image, image, -1);
+    }
     else if (rotation == 270)
-      cv::rotate(image, image, cv::ROTATE_90_COUNTERCLOCKWISE);
-    return processor->setSourceImage(image);
+    {
+      cv::transpose(image, image);
+      cv::flip(image, image, 0);
+    }
+    bool res = processor->setSourceImage(image);
+    image.release();
+
+    return res;
   }
 
   FUNCTION_ATTRIBUTE
@@ -64,15 +77,32 @@ extern "C"
     {
       return false;
     }
-    // Decode images from JPEG-encoded queries
+// Decode images from JPEG-encoded queries
+#ifdef __ANDROID__
     cv::Mat image = cv::imdecode(cv::Mat(1, width * height * 3, CV_8UC1, bytes), cv::IMREAD_COLOR);
+#elif __APPLE__
+  cv::Mat image(height, width, CV_8UC4, bytes);
+#endif
     if (rotation == 90)
-      cv::rotate(image, image, cv::ROTATE_90_CLOCKWISE);
+    {
+      cv::transpose(image, image);
+      cv::flip(image, image, 1);
+    }
     else if (rotation == 180)
-      cv::rotate(image, image, cv::ROTATE_180);
+    {
+      cv::transpose(image, image);
+      cv::flip(image, image, -1);
+    }
     else if (rotation == 270)
-      cv::rotate(image, image, cv::ROTATE_90_COUNTERCLOCKWISE);
-    return processor->setQueryImage(image);
+    {
+      cv::transpose(image, image);
+      cv::flip(image, image, 0);
+    }
+
+    bool res = processor->setQueryImage(image);
+    image.release();
+
+    return res;
   }
 
   FUNCTION_ATTRIBUTE

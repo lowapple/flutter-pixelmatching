@@ -1,12 +1,9 @@
-// ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'dart:ffi';
 import 'dart:io';
 import 'dart:isolate';
 import 'dart:typed_data';
 
-import 'package:camera/camera.dart';
 import 'package:ffi/ffi.dart';
-import 'package:image/image.dart' as imglib;
 
 import 'pixelmatching_bindings.dart' as bindings;
 import 'pixelmatching_state.dart';
@@ -97,71 +94,37 @@ void _handleMessage(message) {
 }
 
 class _PixelMatchingClient {
-  final binding = bindings.PixelMatchingBindings(_lib);
+  final _native = bindings.PixelMatchingBindings(_lib);
   var _lastQueryRes = false;
+  // Image Buffer
+  Pointer<Uint8>? _imageBuffer;
 
   void initialize() {
-    binding.initialize();
+    _native.initialize();
   }
 
-  // Create Image Pointer from Uint8List
-  Pointer<Uint8> _createImagePointerFromBytes(Uint8List bytes) {
-    final ip = malloc.allocate<Uint8>(bytes.length);
-    final ipl = ip.asTypedList(bytes.length);
-    ipl.setRange(0, bytes.length, bytes);
-    return ip;
-  }
-
-  // Create Image Pointer from CameraImage
-  // Pointer<Uint8> _createImagePointer(CameraImage cameraImage) {
-  //   late Uint8List imgBytes;
-  //   if (cameraImage.format.group == ImageFormatGroup.bgra8888) {
-  //     var img = imglib.Image.fromBytes(
-  //       width: cameraImage.width,
-  //       height: cameraImage.height,
-  //       bytes: cameraImage.planes[0].bytes.buffer,
-  //       order: imglib.ChannelOrder.bgra,
-  //     );
-  //     imgBytes = imglib.encodeJpg(img);
-  //   } else if (cameraImage.format.group == ImageFormatGroup.jpeg) {
-  //     // rotate image 90 degree
-  //     imgBytes = cameraImage.planes[0].bytes;
-  //   } else {
-  //     throw Exception("Unsupported image format");
-  //   }
-  //   return _createImagePointerFromBytes(imgBytes);
-  // }
-
-  // Set Marker Image from Uint8List
   bool setTargetImageFromBytes(Uint8List bytes, int w, int h, {int rotation = 0}) {
-    final image = _createImagePointerFromBytes(bytes);
-    final res = binding.setTargetImage(image.cast(), w, h, rotation);
+    var totalSize = bytes.length;
+    var imgBuffer = malloc.allocate<Uint8>(totalSize);
+    var imgBufferList = imgBuffer.asTypedList(totalSize);
+    imgBufferList.setAll(0, bytes);
+    var res = _native.setTargetImage(imgBuffer.cast(), w, h, rotation);
+    malloc.free(imgBuffer);
     return res;
   }
 
   double query(Uint8List bytes, int w, int h, {int rotation = 0}) {
-    final image = _createImagePointerFromBytes(bytes);
-    final res = binding.setQueryImage(image.cast(), w, h, rotation);
+    _imageBuffer ??= malloc.allocate<Uint8>(bytes.length);
+    // 이미지 내용 복사
+    var imageBufferList = _imageBuffer!.asTypedList(bytes.length);
+    imageBufferList.setAll(0, bytes);
+    var res = _native.setQueryImage(_imageBuffer!.cast(), w, h, rotation);
     _lastQueryRes = res;
-    return getQueryConfidenceRate();
+    return _confidence();
   }
 
-  // Set Marker Image from CameraImage
-  // bool setTargetImage(CameraImage cameraImage) {
-  //   final image = _createImagePointer(cameraImage);
-  //   final res = binding.setTargetImage(image.cast(), cameraImage.width, cameraImage.height);
-  //   return res;
-  // }
-
-  // double query(CameraImage cameraImage) {
-  //   final image = _createImagePointer(cameraImage);
-  //   final res = binding.setQueryImage(image.cast(), cameraImage.width, cameraImage.height);
-  //   _lastQueryRes = res;
-  //   return getQueryConfidenceRate();
-  // }
-
   PixelMatchingState getState() {
-    final state = binding.getStatusCode();
+    final state = _native.getStatusCode();
     if (state == -1) {
       return PixelMatchingState.notInitialized;
     } else if (state == 0) {
@@ -176,15 +139,19 @@ class _PixelMatchingClient {
   }
 
   // 0.87 정도 나오면 일치하는 것으로 판단해도 됨
-  double getQueryConfidenceRate() {
+  double _confidence() {
     if (_lastQueryRes) {
-      return binding.getQueryConfidenceRate();
+      return _native.getQueryConfidenceRate();
     } else {
       return 0.0;
     }
   }
 
   void dispose() {
-    binding.dispose();
+    if (_imageBuffer != null) {
+      malloc.free(_imageBuffer!);
+    }
+    _imageBuffer = null;
+    _native.dispose();
   }
 }
