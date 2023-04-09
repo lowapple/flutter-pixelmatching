@@ -3,7 +3,7 @@
 /include
 
 # Ignore cmake build directories
-cmakeLibs/
+opencv/
 
 # But include the other files in cmakeLibs
 !cmakeLibs/CMakeLists.txt

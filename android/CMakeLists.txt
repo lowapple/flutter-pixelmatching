@@ -1,19 +1,31 @@
 cmake_minimum_required(VERSION 3.4.1)
-
-include_directories(../include ../ios/Classes)
-add_library(lib_opencv SHARED IMPORTED)
-set_target_properties(lib_opencv PROPERTIES IMPORTED_LOCATION ${CMAKE_CURRENT_SOURCE_DIR}/src/main/cmakeLibs/${ANDROID_ABI}/libopencv_java4.so)
+# add opencv library to project
+include_directories(../include ../pixelmatching)
+# add library
+add_library(
+    lib_opencv 
+    SHARED 
+    IMPORTED
+    )
+set_target_properties(
+    lib_opencv 
+    PROPERTIES 
+    IMPORTED_LOCATION 
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/main/opencv/${ANDROID_ABI}/libopencv_java4.so
+)
 
 find_library(log-lib log)
 
 add_library(
     opencv_pixelmatching 
-    
     SHARED 
-    
-    ../ios/Classes/debug_logger.cpp
-    ../ios/Classes/image_converter.cpp
-    ../ios/Classes/image_processor.cpp
-    ../ios/Classes/pixel_matching.cpp
+    ../pixelmatching/debug_logger.cpp
+    ../pixelmatching/image_converter.cpp
+    ../pixelmatching/image_processor.cpp
+    ../pixelmatching/pixel_matching.cpp
     )
-target_link_libraries(opencv_pixelmatching lib_opencv ${log-lib})
+target_link_libraries(
+    opencv_pixelmatching 
+    lib_opencv 
+    ${log-lib}
+)
