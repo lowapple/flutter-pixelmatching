@@ -2,9 +2,9 @@ enum PixelMatchingState {
   // The pixel matching is not initialized.
   notInitialized,
   // target image is not set.
-  waitingForTarget,
+  noMarker,
   // query image is not set.
-  readyToProcess,
+  noQuery,
   // is processing.
   processing,
 }

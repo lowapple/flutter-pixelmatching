@@ -73,7 +73,7 @@ class _MyAppState extends State<MyApp> {
     }
     if (_isRunning || !mounted || DateTime.now().millisecondsSinceEpoch - _lastRun < 30) return;
     final status = await matching?.getState();
-    if (status == PixelMatchingState.readyToProcess) {
+    if (status == PixelMatchingState.noQuery) {
       _isRunning = true;
       Uint8List bytes;
       if (Platform.isAndroid) {
@@ -87,7 +87,7 @@ class _MyAppState extends State<MyApp> {
         );
         bytes = imglib.encodeJpg(img);
       }
-      var res = await matching?.query(
+      var res = await matching?.setQuery(
         bytes,
         cameraImage.width,
         cameraImage.height,
@@ -121,7 +121,7 @@ class _MyAppState extends State<MyApp> {
               if (state == PixelMatchingState.notInitialized) {
                 // await matching?.initialize();
               }
-              if (state == PixelMatchingState.waitingForTarget) {
+              if (state == PixelMatchingState.noMarker) {
                 Uint8List bytes;
                 if (Platform.isAndroid) {
                   bytes = cameraImage!.planes[0].bytes;

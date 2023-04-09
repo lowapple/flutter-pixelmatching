@@ -42,7 +42,7 @@ class PixelMatching {
     return res.future;
   }
 
-  Future<double> query(Uint8List image, int width, int height, {int rotation = 0}) async {
+  Future<double> setQuery(Uint8List image, int width, int height, {int rotation = 0}) async {
     if (!isReady) {
       await _initCompleter.future;
     }
@@ -52,7 +52,7 @@ class PixelMatching {
     _client.send(
       client.Request(
         id: id,
-        method: 'query',
+        method: 'setQuery',
         params: {
           'image': image,
           'width': width,
@@ -64,7 +64,7 @@ class PixelMatching {
     return res.future;
   }
 
-  Future<PixelMatchingState> getState() async {
+  Future<PixelMatchingState> getStateCode() async {
     if (!isReady) return Future.value(PixelMatchingState.notInitialized);
     final id = ++_id;
     var res = Completer<PixelMatchingState>();
@@ -72,7 +72,7 @@ class PixelMatching {
     _client.send(
       client.Request(
         id: id,
-        method: 'getState',
+        method: 'getStateCode',
       ),
     );
     return res.future;

@@ -57,9 +57,9 @@ void _handleMessage(message) {
     switch (message.method) {
       case "initialize":
         _client.initialize();
-        var status = _client.getState();
+        var status = _client.getStateCode();
         // initialize
-        if (status != PixelMatchingState.waitingForTarget) {
+        if (status != PixelMatchingState.noMarker) {
           _caller.send(Response(id: message.id, data: false));
           return;
         }
@@ -71,11 +71,11 @@ void _handleMessage(message) {
         final res = _client.setTargetImageFromBytes(image, w, h, rotation: rotation);
         _caller.send(Response(id: message.id, data: res));
         break;
-      case "getState":
-        var status = _client.getState();
+      case "getStateCode":
+        var status = _client.getStateCode();
         _caller.send(Response(id: message.id, data: status));
         break;
-      case "query":
+      case "setQuery":
         if (message.params is Map<String, dynamic>) {
           final image = message.params['image'] as Uint8List;
           final width = message.params['width'] as int;
@@ -108,7 +108,7 @@ class _PixelMatchingClient {
     var imgBuffer = malloc.allocate<Uint8>(totalSize);
     var imgBufferList = imgBuffer.asTypedList(totalSize);
     imgBufferList.setAll(0, bytes);
-    var res = _native.setTargetImage(imgBuffer.cast(), w, h, rotation);
+    var res = _native.setMarker(imgBuffer.cast(), w, h, rotation);
     malloc.free(imgBuffer);
     return res;
   }
@@ -118,19 +118,19 @@ class _PixelMatchingClient {
     // 이미지 내용 복사
     var imageBufferList = _imageBuffer!.asTypedList(bytes.length);
     imageBufferList.setAll(0, bytes);
-    var res = _native.setQueryImage(_imageBuffer!.cast(), w, h, rotation);
+    var res = _native.setQuery(_imageBuffer!.cast(), w, h, rotation);
     _lastQueryRes = res;
     return _confidence();
   }
 
-  PixelMatchingState getState() {
-    final state = _native.getStatusCode();
+  PixelMatchingState getStateCode() {
+    final state = _native.getStateCode();
     if (state == -1) {
       return PixelMatchingState.notInitialized;
     } else if (state == 0) {
-      return PixelMatchingState.waitingForTarget;
+      return PixelMatchingState.noMarker;
     } else if (state == 1) {
-      return PixelMatchingState.readyToProcess;
+      return PixelMatchingState.noQuery;
     } else if (state == 2) {
       return PixelMatchingState.processing;
     } else {
