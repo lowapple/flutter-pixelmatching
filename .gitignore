@@ -4,6 +4,7 @@
 
 # Ignore cmake build directories
 opencv/
+cmake-build-debug/
 
 # But include the other files in cmakeLibs
 !cmakeLibs/CMakeLists.txt
