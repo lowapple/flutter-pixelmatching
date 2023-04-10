@@ -19,10 +19,11 @@ find_library(log-lib log)
 add_library(
     opencv_pixelmatching 
     SHARED 
-    ../pixelmatching/debug_logger.cpp
-    ../pixelmatching/image_converter.cpp
-    ../pixelmatching/image_processor.cpp
-    ../pixelmatching/pixel_matching.cpp
+    ../pixelmatching/DebugLogger.cpp
+    ../pixelmatching/ImageConverter.cpp
+    ../pixelmatching/ImageProcessor.cpp
+    ../pixelmatching/ImageCompare.cpp
+    ../pixelmatching/PixelMatching.cpp
     )
 target_link_libraries(
     opencv_pixelmatching 

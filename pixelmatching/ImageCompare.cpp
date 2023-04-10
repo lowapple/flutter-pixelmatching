@@ -15,8 +15,10 @@ ImageCompare::ImageCompare() {
 
 ImageCompare::~ImageCompare() {
     cvMatchers->clear();
+    cvMatchers.release();
     cvMatchers = nullptr;
     cvDetector->clear();
+    cvDetector.release();
     cvDetector = nullptr;
     clahe.release();
     clahe = nullptr;
@@ -43,9 +45,15 @@ void ImageCompare::setMatchers(const Ptr<Matcher> &matcher) {
 }
 
 bool ImageCompare::compare() {
-    std::vector<std::vector<DMatch>> matches;
+    std::vector<std::vector<DMatch>> createMatches;
+    if (descriptorsMarker.empty() || descriptorsQuery.empty()) {
+        logger_e("descriptors is empty");
+        logger_e("descriptorsMarker: %d, descriptorsQuery: %d", descriptorsMarker.empty(),
+                 descriptorsQuery.empty());
+        return false;
+    }
     try {
-        cvMatchers->knnMatch(descriptorsMarker, descriptorsQuery, matches, 2);
+        cvMatchers->knnMatch(descriptorsMarker, descriptorsQuery, createMatches, Constants::knn);
     }
     catch (const cv::Exception &e) {
         logger_e("compare - knnMatch - cv::Exception: %s", e.what());
@@ -56,25 +64,25 @@ bool ImageCompare::compare() {
         return false;
     }
 
-    std::vector<DMatch> selectedMatches;
-    selectedMatches.reserve(matches.size());
-    for (auto &match: matches) {
+    std::vector<DMatch> selectMatches;
+    selectMatches.reserve(createMatches.size());
+    for (auto &match: createMatches) {
         if (match[0].distance < Constants::threshold * match[1].distance) {
-            selectedMatches.emplace_back(match[0].queryIdx, match[0].trainIdx, match[0].distance);
+            selectMatches.emplace_back(match[0].queryIdx, match[0].trainIdx, match[0].distance);
         }
     }
 
-    if (selectedMatches.size() <= 4) {
-        matches.clear();
-        selectedMatches.clear();
+    if (selectMatches.size() <= 4) {
+        createMatches.clear();
+        selectMatches.clear();
         return false;
     }
 
-    const size_t numMatches = selectedMatches.size();
+    const size_t numMatches = selectMatches.size();
     auto *tarPoints = new cv::Point2f[numMatches];
     auto *qryPoints = new cv::Point2f[numMatches];
     for (size_t i = 0; i < numMatches; ++i) {
-        const auto &match = selectedMatches[i];
+        const auto &match = selectMatches[i];
         tarPoints[i] = keypointsMarker[match.queryIdx].pt;
         qryPoints[i] = keypointsQuery[match.trainIdx].pt;
     }
@@ -89,8 +97,8 @@ bool ImageCompare::compare() {
 
     // 원근 변환 실패시 실패 처리
     if (H.data == nullptr) {
-        matches.clear();
-        selectedMatches.clear();
+        createMatches.clear();
+        selectMatches.clear();
         H.release();
         mappedPointsMarker.clear();
         mappedPointsQuery.clear();
@@ -102,12 +110,15 @@ bool ImageCompare::compare() {
     M /= M.at<double>(2, 2);
 
     // 이미지 원근 변환
+    imageQueryAligned.release();
     warpPerspective(imageQuery, imageQueryAligned, M, imageQuery.size());
 
     // 마스크 생성
+    imageMaskQuery.release();
     imageMaskQuery = Mat::ones(imageQuery.size(), CV_8U);
 
     // 비교 대상 이미지에 대응되지 않는 부분은 제거하기 위한 마스크 생성
+    imageMarkerMasked.release();
     imageMarkerMasked = imageMarker.clone();
     for (int row = 0; row < imageQueryAligned.rows; row++) {
         for (int column = 0; column < imageQueryAligned.cols; column++) {
@@ -119,45 +130,77 @@ bool ImageCompare::compare() {
     }
 
     // ExportImg 사용시 아래 주석 처리
-    matches.clear();
-    selectedMatches.clear();
+    createMatches.clear();
+    selectMatches.clear();
     H.release();
+    M.release();
     mappedPointsMarker.clear();
     mappedPointsQuery.clear();
-    M.release();
-    // imageMarkerMasked.release();
     return true;
 }
 
 bool ImageCompare::setMarker(cv::Mat marker) {
-    logger_i("[pixelmatching] setMarker");
+    logger_i("[ImageCompare] setMarker");
     imageMarker.release();
     imageMarker = marker.clone();
+    if (imageMarker.empty()) {
+        logger_e("[ImageCompare] marker image is empty");
+        return false;
+    }
+    keypointsMarker.clear();
+    descriptorsMarker.release();
     cvDetector->detectAndCompute(imageMarker, noArray(), keypointsMarker, descriptorsMarker);
     cvMatchers->add(descriptorsMarker);
     marker.release();
+    // description markers is empty
+    if (descriptorsMarker.empty()) {
+        logger_e("[ImageCompare] marker descriptions is empty");
+        return false;
+    }
+    if (descriptorsMarker.rows < Constants::knn) {
+        logger_e("[ImageCompare] marker descriptions is too small");
+        return false;
+    }
     return true;
 }
 
 bool ImageCompare::setQuery(cv::Mat query) {
-    logger_i("[pixelmatching] setQuery");
+    logger_i("[ImageCompare] setQuery");
     imageQuery.release();
     imageQuery = query.clone();
+    if (imageQuery.empty()) {
+        logger_e("[ImageCompare] query image is empty");
+        return false;
+    }
+    keypointsQuery.clear();
+    descriptorsQuery.release();
     cvDetector->detectAndCompute(imageQuery, noArray(), keypointsQuery, descriptorsQuery);
+    cvMatchers->clear();
+    cvMatchers->add(descriptorsMarker);
     cvMatchers->add(descriptorsQuery);
     query.release();
+    if (descriptorsQuery.empty()) {
+        logger_e("[ImageCompare] query descriptions is empty");
+        return false;
+    }
+    if (descriptorsQuery.rows < Constants::knn) {
+        logger_e("[ImageCompare] marker descriptions is too small");
+        return false;
+    }
     return compare();
 }
 
 double ImageCompare::getConfidenceRate() {
-    if (imageQueryAligned.empty()) {
+    logger_i("[pixelmatching] getConfidenceRate");
+    if (imageMarkerMasked.empty() || imageQueryAligned.empty()) {
         return -1.0;
     }
-
+    logger_i("[pixelmatching] clahe apply");
     Mat res;
     clahe->apply(imageMarker, imageEqualizedMarker);
     clahe->apply(imageQueryAligned, imageEqualizedQuery);
-    matchTemplate(imageEqualizedMarker, imageEqualizedQuery, res, TemplateMatchModes::TM_CCORR_NORMED,
+    matchTemplate(imageEqualizedMarker, imageEqualizedQuery, res,
+                  TemplateMatchModes::TM_CCORR_NORMED,
                   imageMaskQuery);
     return res.at<float>(0, 0);
 }

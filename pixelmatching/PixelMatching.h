@@ -6,17 +6,38 @@
 extern "C"
 {
 #endif
+
+/**
+ * @return initialize result
+*/
 bool initialize();
 
+/**
+ * @return state code
+*/
 int getStateCode();
 
+/**
+ * @return set marker result
+*/
 bool setMarker(unsigned char *image, int width, int height, int rotation);
 
+/**
+ * @return set query result
+*/
 bool setQuery(unsigned char *image, int width, int height, int rotation);
 
+/**
+ * match marker and query
+ * @return match confidence rate
+*/
 double getQueryConfidenceRate();
 
-unsigned char *getMarkerQueryDifferenceImage();
+/**
+ * @param size output image size
+ * @return output image bytes(encoded by jpeg)
+*/
+unsigned char* getMarkerQueryDifferenceImage(int *size);
 
 void dispose();
 #ifdef __cplusplus

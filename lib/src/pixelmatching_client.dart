@@ -4,7 +4,7 @@ import 'dart:isolate';
 import 'dart:typed_data';
 
 import 'package:ffi/ffi.dart';
-
+import 'package:image/image.dart' as imglib;
 import 'pixelmatching_bindings.dart' as bindings;
 import 'pixelmatching_state.dart';
 
@@ -75,6 +75,10 @@ void _handleMessage(message) {
         var status = _client.getStateCode();
         _caller.send(Response(id: message.id, data: status));
         break;
+      case "getMarkerQueryDifferenceImage":
+        final res = _client.getMarkerQueryDifferenceImage();
+        _caller.send(Response(id: message.id, data: res));
+        break;
       case "setQuery":
         if (message.params is Map<String, dynamic>) {
           final image = message.params['image'] as Uint8List;
@@ -95,9 +99,11 @@ void _handleMessage(message) {
 
 class _PixelMatchingClient {
   final _native = bindings.PixelMatchingBindings(_lib);
-  var _lastQueryRes = false;
+  var _imageBufferSize = 0;
+
   // Image Buffer
   Pointer<Uint8>? _imageBuffer;
+  Pointer<Int>? _debugImageLen;
 
   void initialize() {
     _native.initialize();
@@ -114,13 +120,35 @@ class _PixelMatchingClient {
   }
 
   double query(Uint8List bytes, int w, int h, {int rotation = 0}) {
-    _imageBuffer ??= malloc.allocate<Uint8>(bytes.length);
+    if (_imageBuffer != null && _imageBufferSize != bytes.length) {
+      malloc.free(_imageBuffer!);
+      _imageBuffer = null;
+    }
+    _imageBufferSize = bytes.length;
+    _imageBuffer ??= malloc.allocate<Uint8>(_imageBufferSize);
     // 이미지 내용 복사
-    var imageBufferList = _imageBuffer!.asTypedList(bytes.length);
+    var imageBufferList = _imageBuffer!.asTypedList(_imageBufferSize);
     imageBufferList.setAll(0, bytes);
     var res = _native.setQuery(_imageBuffer!.cast(), w, h, rotation);
-    _lastQueryRes = res;
-    return _confidence();
+    if (res) {
+      return _confidence();
+    } else {
+      return 0.0;
+    }
+  }
+
+  Uint8List? getMarkerQueryDifferenceImage() {
+    _debugImageLen ??= malloc.allocate<Int>(1);
+    _debugImageLen?.value = 0;
+    final imgPointer = _native.getMarkerQueryDifferenceImage(_debugImageLen!).cast<Uint8>();
+    final imgLen = _debugImageLen!.value;
+    if (imgLen == 0) {
+      malloc.free(imgPointer);
+      return null;
+    }
+    final img = imgPointer.asTypedList(imgLen);
+    malloc.free(imgPointer);
+    return img;
   }
 
   PixelMatchingState getStateCode() {
@@ -140,16 +168,15 @@ class _PixelMatchingClient {
 
   // 0.87 정도 나오면 일치하는 것으로 판단해도 됨
   double _confidence() {
-    if (_lastQueryRes) {
-      return _native.getQueryConfidenceRate();
-    } else {
-      return 0.0;
-    }
+    return _native.getQueryConfidenceRate();
   }
 
   void dispose() {
     if (_imageBuffer != null) {
       malloc.free(_imageBuffer!);
+    }
+    if (_debugImageLen != null) {
+      malloc.free(_debugImageLen!);
     }
     _imageBuffer = null;
     _native.dispose();

@@ -1,10 +1,8 @@
 import 'dart:async';
 import 'dart:isolate';
 import 'dart:typed_data';
-import 'package:camera/camera.dart';
-import 'package:flutter_pixelmatching/flutter_pixelmatching.dart';
-
 import 'pixelmatching_client.dart' as client;
+import 'pixelmatching_state.dart';
 
 class PixelMatching {
   bool isReady = false;
@@ -73,6 +71,22 @@ class PixelMatching {
       client.Request(
         id: id,
         method: 'getStateCode',
+      ),
+    );
+    return res.future;
+  }
+
+  Future<Uint8List?> getMarkerQueryDifferenceImage() async {
+    if (!isReady) {
+      await _initCompleter.future;
+    }
+    final id = ++_id;
+    var res = Completer<Uint8List?>();
+    _completers[id] = res;
+    _client.send(
+      client.Request(
+        id: id,
+        method: 'getMarkerQueryDifferenceImage',
       ),
     );
     return res.future;

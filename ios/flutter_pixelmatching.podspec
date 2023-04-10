@@ -13,13 +13,20 @@ Pixelmatching plugin with OpenCV
   s.license          = { :file => '../LICENSE' }
   s.author           = { 'Your Company' => 'email@example.com' }
   s.source           = { :path => '.' }
-  s.source_files = '../pixelmatching/**'
-  s.static_framework = true
+  s.source_files = [
+    'Classes/**/*',
+    'pixelmatching/*.{h,cpp}',
+  ]
   s.dependency 'Flutter'
-  s.dependency 'OpenCV', '4.3.0' 
   s.platform = :ios, '11.0'
-  s.module_map = 'flutter_pixelmatching.modulemap'
+  s.static_framework = true
+
   # Flutter.framework does not contain a i386 slice.
   s.pod_target_xcconfig = { 'DEFINES_MODULE' => 'YES', 'EXCLUDED_ARCHS[sdk=iphonesimulator*]' => 'i386' }
   s.swift_version = '5.0'
+
+  # Pixelmatching
+  s.dependency 'OpenCV', '4.3.0'
+  s.library = 'c++'
+  s.module_map = 'flutter_pixelmatching.modulemap'
 end

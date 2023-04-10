@@ -20,6 +20,7 @@ class PixelMatchingBindings {
           lookup)
       : _lookup = lookup;
 
+  /// @return initialize result
   bool initialize() {
     return _initialize();
   }
@@ -28,6 +29,7 @@ class PixelMatchingBindings {
       _lookup<ffi.NativeFunction<ffi.Bool Function()>>('initialize');
   late final _initialize = _initializePtr.asFunction<bool Function()>();
 
+  /// @return state code
   int getStateCode() {
     return _getStateCode();
   }
@@ -36,6 +38,7 @@ class PixelMatchingBindings {
       _lookup<ffi.NativeFunction<ffi.Int Function()>>('getStateCode');
   late final _getStateCode = _getStateCodePtr.asFunction<int Function()>();
 
+  /// @return set marker result
   bool setMarker(
     ffi.Pointer<ffi.UnsignedChar> image,
     int width,
@@ -57,6 +60,7 @@ class PixelMatchingBindings {
   late final _setMarker = _setMarkerPtr.asFunction<
       bool Function(ffi.Pointer<ffi.UnsignedChar>, int, int, int)>();
 
+  /// @return set query result
   bool setQuery(
     ffi.Pointer<ffi.UnsignedChar> image,
     int width,
@@ -78,6 +82,8 @@ class PixelMatchingBindings {
   late final _setQuery = _setQueryPtr.asFunction<
       bool Function(ffi.Pointer<ffi.UnsignedChar>, int, int, int)>();
 
+  /// match marker and query
+  /// @return match confidence rate
   double getQueryConfidenceRate() {
     return _getQueryConfidenceRate();
   }
@@ -88,15 +94,23 @@ class PixelMatchingBindings {
   late final _getQueryConfidenceRate =
       _getQueryConfidenceRatePtr.asFunction<double Function()>();
 
-  ffi.Pointer<ffi.UnsignedChar> getMarkerQueryDifferenceImage() {
-    return _getMarkerQueryDifferenceImage();
+  /// @param size output image size
+  /// @return output image bytes(encoded by jpeg)
+  ffi.Pointer<ffi.UnsignedChar> getMarkerQueryDifferenceImage(
+    ffi.Pointer<ffi.Int> size,
+  ) {
+    return _getMarkerQueryDifferenceImage(
+      size,
+    );
   }
 
-  late final _getMarkerQueryDifferenceImagePtr =
-      _lookup<ffi.NativeFunction<ffi.Pointer<ffi.UnsignedChar> Function()>>(
-          'getMarkerQueryDifferenceImage');
-  late final _getMarkerQueryDifferenceImage = _getMarkerQueryDifferenceImagePtr
-      .asFunction<ffi.Pointer<ffi.UnsignedChar> Function()>();
+  late final _getMarkerQueryDifferenceImagePtr = _lookup<
+      ffi.NativeFunction<
+          ffi.Pointer<ffi.UnsignedChar> Function(
+              ffi.Pointer<ffi.Int>)>>('getMarkerQueryDifferenceImage');
+  late final _getMarkerQueryDifferenceImage =
+      _getMarkerQueryDifferenceImagePtr.asFunction<
+          ffi.Pointer<ffi.UnsignedChar> Function(ffi.Pointer<ffi.Int>)>();
 
   void dispose() {
     return _dispose();

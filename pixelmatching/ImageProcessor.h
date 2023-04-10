@@ -9,6 +9,8 @@ class ImageProcessor {
 private:
     ImageCompare compare;
 private:
+    Mutex mutex;
+private:
     StateCode stateCode = StateCode::NotInitialized;
 public:
     ImageProcessor();

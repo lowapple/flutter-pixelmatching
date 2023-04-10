@@ -101,32 +101,55 @@ void dispose() {
 }
 
 FUNCTION_ATTRIBUTE
-unsigned char *getMarkerQueryDifferenceImage() {
+unsigned char *getMarkerQueryDifferenceImage(int *size) {
+    logger_i("[PixelMatching] getMarkerQueryDifferenceImage begin");
+    logger_i("[PixelMatching] getMarkerQueryDifferenceImage processor %p", processor);
     if (processor == nullptr) {
-        return nullptr;
+        auto *res = new unsigned char[0];
+        res[0] = 0;
+        return res;
     }
-    Mat mkr = processor->getImageMarker();
-    Mat qry = processor->getImageQuery();
-    if (mkr.empty() || qry.empty()) {
-        return nullptr;
+    try {
+        Mat mkr = processor->getImageMarker();
+        Mat qry = processor->getImageQuery();
+        if (mkr.empty() || qry.empty()) {
+            logger_i("[PixelMatching] getMarkerQueryDifferenceImage empty images");
+            auto *res = new unsigned char[0];
+            res[0] = 0;
+            return res;
+        }
+        cv::Mat combine;
+        cv::hconcat(mkr, qry, combine);
+        cv::Mat compare;
+        cv::absdiff(mkr, qry, compare);
+        cv::threshold(compare, compare, 50, 255, cv::THRESH_BINARY);
+        cv::hconcat(combine, compare, combine);
+
+        std::vector<unsigned char> encoded_data;
+        std::vector<int> compression_params;
+        compression_params.push_back(cv::IMWRITE_JPEG_QUALITY);
+        compression_params.push_back(90);
+
+        cv::imencode(".jpg", combine, encoded_data, compression_params);
+        logger_i("[PixelMatching] getMarkerQueryDifferenceImage encoded_data size %d",
+                 encoded_data.size());
+        auto *img = new unsigned char[encoded_data.size()];
+        memcpy(img, encoded_data.data(), encoded_data.size());
+        *size = (int) encoded_data.size();
+        logger_i("[PixelMatching] getMarkerQueryDifferenceImage end");
+
+        mkr.release();
+        qry.release();
+        combine.release();
+        compare.release();
+
+        return img;
+    } catch (std::exception &e) {
+        logger_e("getMarkerQueryDifferenceImage %s", e.what());
+        auto *res = new unsigned char[0];
+        res[0] = 0;
+        return res;
     }
-    cv::Mat combined;
-    cv::hconcat(mkr, qry, combined);
-    cv::Mat diff;
-    cv::absdiff(mkr, qry, diff);
-    cv::threshold(diff, diff, 50, 255, cv::THRESH_BINARY);
-    cv::hconcat(combined, diff, combined);
-
-    std::vector<unsigned char> encoded_data;
-    std::vector<int> compression_params;
-    compression_params.push_back(cv::IMWRITE_JPEG_QUALITY);
-    compression_params.push_back(90);
-
-    cv::imencode(".jpg", combined, encoded_data, compression_params);
-
-    auto *data = new unsigned char[encoded_data.size()];
-    std::memcpy(data, encoded_data.data(), encoded_data.size());
-    return data;
 }
 
 #ifdef __cplusplus
