@@ -1,8 +1,7 @@
 #include "ImageProcessor.h"
 #include "ImageConverter.h"
 
-ImageProcessor::ImageProcessor() {
-    stateCode = StateCode::NotInitialized;
+ImageProcessor::ImageProcessor() : stateCode(NotInitialized) {
 
     compare.setMatchers(cv::DescriptorMatcher::create(DescriptorMatcher::MatcherType::FLANNBASED));
 #ifdef __ANDROID__
@@ -12,17 +11,13 @@ ImageProcessor::ImageProcessor() {
 #endif
 }
 
-StateCode ImageProcessor::getStateCode() const {
-    return stateCode;
-}
-
-void ImageProcessor::setStateCode(StateCode stateCode) {
-    this->stateCode = stateCode;
+void ImageProcessor::setStateCode(StateCode code) {
+    this->stateCode = code;
 }
 
 void ImageProcessor::initialize() {
-    if (getStateCode() == StateCode::NotInitialized) {
-        setStateCode(StateCode::NoMarker);
+    if (getStateCode() == NotInitialized) {
+        setStateCode(NoMarker);
     }
 }
 
@@ -64,7 +59,7 @@ bool ImageProcessor::setQuery(Mat query) {
     query.release();
     logger_i("[ImageProcessor] setQuery query image release");
     if (compare.setQuery(converted)) {
-        logger_i("[ImageProcessor] setQuery set marker");
+        logger_i("[ImageProcessor] setQuery set query");
         setStateCode(StateCode::NoQuery);
         mutex.unlock();
         return true;
@@ -90,4 +85,8 @@ Mat ImageProcessor::getImageQuery() {
     Mat query = compare.getImageQuery().clone();
     mutex.unlock();
     return query;
+}
+
+StateCode ImageProcessor::getStateCode() {
+    return stateCode;
 }

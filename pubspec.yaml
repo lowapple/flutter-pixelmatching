@@ -84,5 +84,5 @@ ffigen:
     - '-I./include/'
   headers:
     entry-points:
-      - './pixelmatching/PixelMatching.h'
+      - './ios/Classes/src/PixelMatching.h'
     

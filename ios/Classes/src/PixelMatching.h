@@ -20,12 +20,13 @@ int getStateCode();
 /**
  * @return set marker result
 */
-bool setMarker(unsigned char *image, int width, int height, int rotation);
+bool setMarker(const char *imageType, unsigned char *image, int width, int height, int rotation);
+
 
 /**
  * @return set query result
 */
-bool setQuery(unsigned char *image, int width, int height, int rotation);
+bool setQuery(const char *imageType, unsigned char *image, int width, int height, int rotation);
 
 /**
  * match marker and query
@@ -37,9 +38,10 @@ double getQueryConfidenceRate();
  * @param size output image size
  * @return output image bytes(encoded by jpeg)
 */
-unsigned char* getMarkerQueryDifferenceImage(int *size);
+unsigned char *getMarkerQueryDifferenceImage(int *size);
 
 void dispose();
+
 #ifdef __cplusplus
 }
 #endif

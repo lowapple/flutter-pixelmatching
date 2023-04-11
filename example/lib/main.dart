@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 // ignore: depend_on_referenced_packages
 import 'package:image/image.dart' as imglib;
 import 'package:flutter_pixelmatching/flutter_pixelmatching.dart';
+import 'package:image_picker/image_picker.dart';
 
 void main() {
   runApp(const MyApp());
@@ -37,7 +38,6 @@ class _MyAppState extends State<MyApp> {
   @override
   void initState() {
     matching = PixelMatching();
-    init();
     super.initState();
   }
 
@@ -72,21 +72,23 @@ class _MyAppState extends State<MyApp> {
   }
 
   cameraStream(CameraImage cameraImage) async {
-    this.cameraImage = cameraImage;
     if (_isRunning || !mounted || DateTime.now().millisecondsSinceEpoch - _lastRun < 50) return;
+    this.cameraImage = cameraImage;
     final status = await matching?.getStateCode();
     print(status);
+    print(cameraImage.toString());
     if (status == PixelMatchingState.noQuery) {
       _isRunning = true;
+      final imgType = Platform.isAndroid ? "jpeg" : "bgra8888";
       final img = cameraImage.planes[0].bytes;
       final w = cameraImage.width;
       final h = cameraImage.height;
-      final confidence = await matching?.setQuery(img, w, h, rotation: rotation);
+      final confidence = await matching?.setQuery(imgType, img, w, h, rotation: rotation);
       print(confidence);
       final preview = await matching?.getMarkerQueryDifferenceImage();
       if (preview != null) {
         setState(() {
-          previewImage = preview;
+          previewImage = imglib.encodeJpg(preview);
         });
       }
       _isRunning = false;
@@ -107,51 +109,70 @@ class _MyAppState extends State<MyApp> {
         },
         child: Scaffold(
           appBar: AppBar(
-            title: const Text('OpenCV PixelMatching Plugin Sample'),
+            title: const Text('픽셀매칭'),
           ),
-          body: Column(children: [
-            controller != null ? CameraPreview(controller!) : Container(),
-            if (previewImage != null)
-              Image.memory(
-                previewImage!,
-                gaplessPlayback: true,
-              )
-          ]),
+          body: controller == null
+              ? Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    TextButton(
+                      onPressed: () async {
+                        final imagePicker = ImagePicker();
+                        final xImage = await imagePicker.pickImage(source: ImageSource.gallery);
+                        if (xImage != null) {
+                          final image = await imglib.decodeJpgFile(xImage.path);
+                          matching?.initialize("jpeg", imglib.encodeJpg(image!), image.width, image.height).then((value) {
+                            init();
+                          });
+                        }
+                      },
+                      child: const Text(
+                        "이미지 선택",
+                        style: TextStyle(fontSize: 18.0),
+                      ),
+                    ),
+                    TextButton(
+                      onPressed: () async {
+                        final imagePicker = ImagePicker();
+                        final xImage = await imagePicker.pickImage(source: ImageSource.camera);
+                        if (xImage != null) {
+                          final image = await imglib.decodeJpgFile(xImage.path);
+                          matching?.initialize("jpeg", imglib.encodeJpg(image!), image.width, image.height).then((value) {
+                            if (value) {
+                              init();
+                            }
+                          });
+                        }
+                      },
+                      child: const Text(
+                        "카메라 찍기",
+                        style: TextStyle(fontSize: 18.0),
+                      ),
+                    ),
+                  ],
+                )
+              : Column(
+                  children: [
+                    CameraPreview(controller!),
+                    if (previewImage != null)
+                      Image.memory(
+                        previewImage!,
+                        gaplessPlayback: true,
+                      )
+                  ],
+                ),
           floatingActionButton: IconButton(
             onPressed: () async {
-              final state = await matching?.getStateCode();
-              // image bytes
-              final img = cameraImage!.planes[0].bytes;
-              final w = cameraImage!.width;
-              final h = cameraImage!.height;
-              if (state == PixelMatchingState.notInitialized) {
-                await matching?.initialize(img, w, h, rotation: rotation);
-              }
-              if (kDebugMode) {
-                print(state);
-              }
-
-              // if (state == PixelMatchingState.noMarker) {
-              //   Uint8List bytes;
-              //   if (Platform.isAndroid) {
-              //     bytes = cameraImage!.planes[0].bytes;
-              //   } else {
-              //     var img = imglib.Image.fromBytes(
-              //       width: cameraImage!.width,
-              //       height: cameraImage!.height,
-              //       bytes: cameraImage!.planes[0].bytes.buffer,
-              //       order: imglib.ChannelOrder.bgra,
-              //     );
-              //     bytes = imglib.encodeJpg(img);
-              //   }
-              //   setState(() {
-              //     isTarget = true;
-              //   });
-              //   return;
-              // }
+              matching?.dispose();
+              await controller?.dispose();
+              setState(() {
+                controller = null;
+              });
             },
             icon: const Icon(
-              Icons.camera,
+              Icons.clear_all,
             ),
           ),
         ),

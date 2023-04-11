@@ -40,12 +40,14 @@ class PixelMatchingBindings {
 
   /// @return set marker result
   bool setMarker(
+    ffi.Pointer<ffi.UnsignedChar> imageType,
     ffi.Pointer<ffi.UnsignedChar> image,
     int width,
     int height,
     int rotation,
   ) {
     return _setMarker(
+      imageType,
       image,
       width,
       height,
@@ -55,19 +57,26 @@ class PixelMatchingBindings {
 
   late final _setMarkerPtr = _lookup<
       ffi.NativeFunction<
-          ffi.Bool Function(ffi.Pointer<ffi.UnsignedChar>, ffi.Int, ffi.Int,
+          ffi.Bool Function(
+              ffi.Pointer<ffi.UnsignedChar>,
+              ffi.Pointer<ffi.UnsignedChar>,
+              ffi.Int,
+              ffi.Int,
               ffi.Int)>>('setMarker');
   late final _setMarker = _setMarkerPtr.asFunction<
-      bool Function(ffi.Pointer<ffi.UnsignedChar>, int, int, int)>();
+      bool Function(ffi.Pointer<ffi.UnsignedChar>,
+          ffi.Pointer<ffi.UnsignedChar>, int, int, int)>();
 
   /// @return set query result
   bool setQuery(
+    ffi.Pointer<ffi.UnsignedChar> imageType,
     ffi.Pointer<ffi.UnsignedChar> image,
     int width,
     int height,
     int rotation,
   ) {
     return _setQuery(
+      imageType,
       image,
       width,
       height,
@@ -77,10 +86,15 @@ class PixelMatchingBindings {
 
   late final _setQueryPtr = _lookup<
       ffi.NativeFunction<
-          ffi.Bool Function(ffi.Pointer<ffi.UnsignedChar>, ffi.Int, ffi.Int,
+          ffi.Bool Function(
+              ffi.Pointer<ffi.UnsignedChar>,
+              ffi.Pointer<ffi.UnsignedChar>,
+              ffi.Int,
+              ffi.Int,
               ffi.Int)>>('setQuery');
   late final _setQuery = _setQueryPtr.asFunction<
-      bool Function(ffi.Pointer<ffi.UnsignedChar>, int, int, int)>();
+      bool Function(ffi.Pointer<ffi.UnsignedChar>,
+          ffi.Pointer<ffi.UnsignedChar>, int, int, int)>();
 
   /// match marker and query
   /// @return match confidence rate

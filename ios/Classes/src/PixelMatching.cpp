@@ -32,15 +32,22 @@ int getStateCode() {
     if (processor == nullptr) {
         return -1;
     }
-    return processor->getStateCode();
+    return (int) processor->getStateCode();
 }
 
 FUNCTION_ATTRIBUTE
-bool setMarker(unsigned char *bytes, int width, int height, int rotation) {
+bool setMarker(const char *imageType, unsigned char *bytes, int width, int height, int rotation) {
     if (processor == nullptr) {
         return false;
     }
-    Mat image = imdecode(Mat(1, width * height * 3, CV_8UC1, bytes), IMREAD_COLOR);
+    Mat image;
+    if (strcmp(imageType, "jpeg") == 0) {
+        image = imdecode(Mat(1, width * height * 3, CV_8UC1, bytes), IMREAD_COLOR);
+    } else if (strcmp(imageType, "bgra8888") == 0) {
+        image = Mat(height, width, CV_8UC4, bytes);
+    } else {
+        throw std::runtime_error("Unsupported image type: " + std::string(imageType));
+    }
     if (rotation == 90) {
         transpose(image, image);
         flip(image, image, 1);
@@ -58,15 +65,18 @@ bool setMarker(unsigned char *bytes, int width, int height, int rotation) {
 }
 
 FUNCTION_ATTRIBUTE
-bool setQuery(unsigned char *bytes, int width, int height, int rotation) {
+bool setQuery(const char *imageType, unsigned char *bytes, int width, int height, int rotation) {
     if (processor == nullptr) {
         return false;
     }
-#ifdef __ANDROID__
-    Mat image = imdecode(Mat(1, width * height * 3, CV_8UC1, bytes), IMREAD_COLOR);
-#elif __APPLE__
-    Mat image(height, width, CV_8UC4, bytes);
-#endif
+    Mat image;
+    if (strcmp(imageType, "jpeg") == 0) {
+        image = imdecode(Mat(1, width * height * 3, CV_8UC1, bytes), IMREAD_COLOR);
+    } else if (strcmp(imageType, "bgra8888") == 0) {
+        image = Mat(height, width, CV_8UC4, bytes);
+    } else {
+        throw std::runtime_error("Unsupported image type: " + std::string(imageType));
+    }
     if (rotation == 90) {
         transpose(image, image);
         flip(image, image, 1);
@@ -105,18 +115,13 @@ unsigned char *getMarkerQueryDifferenceImage(int *size) {
     logger_i("[PixelMatching] getMarkerQueryDifferenceImage begin");
     logger_i("[PixelMatching] getMarkerQueryDifferenceImage processor %p", processor);
     if (processor == nullptr) {
-        auto *res = new unsigned char[0];
-        res[0] = 0;
-        return res;
+        return nullptr;
     }
     try {
         Mat mkr = processor->getImageMarker();
         Mat qry = processor->getImageQuery();
         if (mkr.empty() || qry.empty()) {
-            logger_i("[PixelMatching] getMarkerQueryDifferenceImage empty images");
-            auto *res = new unsigned char[0];
-            res[0] = 0;
-            return res;
+            return nullptr;
         }
         cv::Mat combine;
         cv::hconcat(mkr, qry, combine);
@@ -129,7 +134,10 @@ unsigned char *getMarkerQueryDifferenceImage(int *size) {
         std::vector<int> compression_params;
         compression_params.push_back(cv::IMWRITE_JPEG_QUALITY);
         compression_params.push_back(90);
-
+        if (combine.empty()) {
+            logger_i("[PixelMatching] getMarkerQueryDifferenceImage combine empty");
+            return nullptr;
+        }
         cv::imencode(".jpg", combine, encoded_data, compression_params);
         logger_i("[PixelMatching] getMarkerQueryDifferenceImage encoded_data size %d",
                  encoded_data.size());

@@ -8,7 +8,7 @@ import 'package:image/image.dart' as imglib;
 import 'pixelmatching_bindings.dart' as bindings;
 import 'pixelmatching_state.dart';
 
-final DynamicLibrary _lib = Platform.isAndroid ? DynamicLibrary.open("libopencv_pixelmatching.so") : DynamicLibrary.process();
+final DynamicLibrary _lib = Platform.isAndroid ? DynamicLibrary.open("libflutter_pixelmatching.so") : DynamicLibrary.process();
 
 late _PixelMatchingClient _client;
 
@@ -64,11 +64,12 @@ void _handleMessage(message) {
           return;
         }
         // set target image
+        final imageType = message.params['imageType'] as String;
         final image = message.params['image'] as Uint8List;
         final w = message.params['width'] as int;
         final h = message.params['height'] as int;
         final rotation = message.params['rotation'] as int;
-        final res = _client.setTargetImageFromBytes(image, w, h, rotation: rotation);
+        final res = _client.setTargetImageFromBytes(imageType, image, w, h, rotation: rotation);
         _caller.send(Response(id: message.id, data: res));
         break;
       case "getStateCode":
@@ -81,11 +82,12 @@ void _handleMessage(message) {
         break;
       case "setQuery":
         if (message.params is Map<String, dynamic>) {
+          final imageType = message.params['imageType'] as String;
           final image = message.params['image'] as Uint8List;
           final width = message.params['width'] as int;
           final height = message.params['height'] as int;
           final rotation = message.params['rotation'] as int;
-          final res = _client.query(image, width, height, rotation: rotation);
+          final res = _client.query(imageType, image, width, height, rotation: rotation);
           _caller.send(Response(id: message.id, data: res));
         }
         break;
@@ -103,33 +105,40 @@ class _PixelMatchingClient {
 
   // Image Buffer
   Pointer<Uint8>? _imageBuffer;
+  Pointer<Utf8>? _imageType;
   Pointer<Int>? _debugImageLen;
 
   void initialize() {
     _native.initialize();
   }
 
-  bool setTargetImageFromBytes(Uint8List bytes, int w, int h, {int rotation = 0}) {
+  bool setTargetImageFromBytes(String imageType, Uint8List bytes, int w, int h, {int rotation = 0}) {
     var totalSize = bytes.length;
     var imgBuffer = malloc.allocate<Uint8>(totalSize);
     var imgBufferList = imgBuffer.asTypedList(totalSize);
+    var imgType = imageType.toNativeUtf8();
     imgBufferList.setAll(0, bytes);
-    var res = _native.setMarker(imgBuffer.cast(), w, h, rotation);
+    var res = _native.setMarker(imgType.cast(), imgBuffer.cast(), w, h, rotation);
     malloc.free(imgBuffer);
+    malloc.free(imgType);
     return res;
   }
 
-  double query(Uint8List bytes, int w, int h, {int rotation = 0}) {
+  double query(String imageType, Uint8List bytes, int w, int h, {int rotation = 0}) {
     if (_imageBuffer != null && _imageBufferSize != bytes.length) {
       malloc.free(_imageBuffer!);
+      malloc.free(_imageType!);
       _imageBuffer = null;
     }
     _imageBufferSize = bytes.length;
     _imageBuffer ??= malloc.allocate<Uint8>(_imageBufferSize);
+    _imageType ??= imageType.toNativeUtf8();
+
     // 이미지 내용 복사
     var imageBufferList = _imageBuffer!.asTypedList(_imageBufferSize);
     imageBufferList.setAll(0, bytes);
-    var res = _native.setQuery(_imageBuffer!.cast(), w, h, rotation);
+
+    var res = _native.setQuery(_imageType!.cast(), _imageBuffer!.cast(), w, h, rotation);
     if (res) {
       return _confidence();
     } else {
@@ -137,16 +146,22 @@ class _PixelMatchingClient {
     }
   }
 
-  Uint8List? getMarkerQueryDifferenceImage() {
+  imglib.Image? getMarkerQueryDifferenceImage() {
     _debugImageLen ??= malloc.allocate<Int>(1);
     _debugImageLen?.value = 0;
-    final imgPointer = _native.getMarkerQueryDifferenceImage(_debugImageLen!).cast<Uint8>();
+    print("getMarkerQueryDifferenceImage len: ${_debugImageLen?.value}");
+    final imgPointer = _native.getMarkerQueryDifferenceImage(_debugImageLen!);
+    print("getMarkerQueryDifferenceImage len: ${_debugImageLen?.value}");
+    if (imgPointer.address == nullptr.address) {
+      return null;
+    }
     final imgLen = _debugImageLen!.value;
     if (imgLen == 0) {
       malloc.free(imgPointer);
       return null;
     }
-    final img = imgPointer.asTypedList(imgLen);
+    final imgBytes = imgPointer.cast<Uint8>().asTypedList(imgLen);
+    final img = imglib.decodeJpg(imgBytes);
     malloc.free(imgPointer);
     return img;
   }
@@ -177,6 +192,9 @@ class _PixelMatchingClient {
     }
     if (_debugImageLen != null) {
       malloc.free(_debugImageLen!);
+    }
+    if (_imageType != null) {
+      malloc.free(_imageType!);
     }
     _imageBuffer = null;
     _native.dispose();

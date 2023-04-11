@@ -11,15 +11,15 @@ private:
 private:
     Mutex mutex;
 private:
-    StateCode stateCode = StateCode::NotInitialized;
+    StateCode stateCode;
 public:
     ImageProcessor();
 
     void initialize();
 
-    void setStateCode(StateCode stateCode);
+    void setStateCode(StateCode code);
 
-    [[nodiscard]] StateCode getStateCode() const;
+    StateCode getStateCode();
 
     bool setMarker(Mat marker);
 

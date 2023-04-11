@@ -1,27 +1,26 @@
 import 'dart:async';
 import 'dart:isolate';
 import 'dart:typed_data';
+import 'package:image/image.dart' as imglib;
 import 'pixelmatching_client.dart' as client;
 import 'pixelmatching_state.dart';
 
 class PixelMatching {
   bool isReady = false;
+
   //
-  late Isolate _thread;
-  late SendPort _client;
+  Isolate? _thread;
+  SendPort? _client;
 
   var _id = 0;
   final _completers = <int, Completer>{};
-  final _initCompleter = Completer();
-
-  PixelMatching() {
-    _initThread();
-  }
+  Completer? _initCompleter;
 
   // *Public*
-  Future<bool> initialize(Uint8List bytes, int width, int height, {int rotation = 0}) async {
+  Future<bool> initialize(String imageType, Uint8List bytes, int width, int height, {int rotation = 0}) async {
     if (!isReady) {
-      await _initCompleter.future;
+      await _initThread();
+      await _initCompleter?.future;
     }
     final id = ++_id;
     var res = Completer<bool>();
@@ -30,28 +29,30 @@ class PixelMatching {
       id: id,
       method: 'initialize',
       params: {
+        'imageType': imageType,
         'image': bytes,
         'width': width,
         'height': height,
         'rotation': rotation,
       },
     );
-    _client.send(req);
+    _client?.send(req);
     return res.future;
   }
 
-  Future<double> setQuery(Uint8List image, int width, int height, {int rotation = 0}) async {
+  Future<double> setQuery(String imageType, Uint8List image, int width, int height, {int rotation = 0}) async {
     if (!isReady) {
-      await _initCompleter.future;
+      await _initCompleter?.future;
     }
     final id = ++_id;
     var res = Completer<double>();
     _completers[id] = res;
-    _client.send(
+    _client?.send(
       client.Request(
         id: id,
         method: 'setQuery',
         params: {
+          'imageType': imageType,
           'image': image,
           'width': width,
           'height': height,
@@ -67,7 +68,7 @@ class PixelMatching {
     final id = ++_id;
     var res = Completer<PixelMatchingState>();
     _completers[id] = res;
-    _client.send(
+    _client?.send(
       client.Request(
         id: id,
         method: 'getStateCode',
@@ -76,14 +77,14 @@ class PixelMatching {
     return res.future;
   }
 
-  Future<Uint8List?> getMarkerQueryDifferenceImage() async {
+  Future<imglib.Image?> getMarkerQueryDifferenceImage() async {
     if (!isReady) {
-      await _initCompleter.future;
+      await _initCompleter?.future;
     }
     final id = ++_id;
-    var res = Completer<Uint8List?>();
+    var res = Completer<imglib.Image?>();
     _completers[id] = res;
-    _client.send(
+    _client?.send(
       client.Request(
         id: id,
         method: 'getMarkerQueryDifferenceImage',
@@ -93,12 +94,12 @@ class PixelMatching {
   }
 
   // *Private*
-  void _initThread() async {
+  _initThread() async {
     final fromThread = ReceivePort();
     fromThread.listen(_handleMessage, onDone: () {
       isReady = false;
     });
-
+    _initCompleter = Completer();
     _thread = await Isolate.spawn(
       client.init,
       fromThread.sendPort,
@@ -109,7 +110,7 @@ class PixelMatching {
     if (message is SendPort) {
       _client = message;
       isReady = true;
-      _initCompleter.complete();
+      _initCompleter?.complete();
       return;
     }
 
@@ -131,9 +132,11 @@ class PixelMatching {
       method: 'dispose',
       params: null,
     );
-    _client.send(req);
+    _client?.send(req);
     await res.future;
-    _thread.kill();
+    _initCompleter = null;
+    _thread?.kill();
+    _thread = null;
     isReady = false;
   }
 }
