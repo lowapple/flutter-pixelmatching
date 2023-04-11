@@ -9,8 +9,8 @@ unzip opencv-4.5.4-ios-framework.zip
 
 cp -r opencv2.framework ../ios
 cp -r OpenCV-android-sdk/sdk/native/jni/include ../
-mkdir -p ../android/src/main/cmakeLibs/
-cp -r OpenCV-android-sdk/sdk/native/libs/* ../android/src/main/cmakeLibs/
+mkdir -p ../android/src/main/opencv/
+cp -r OpenCV-android-sdk/sdk/native/libs/* ../android/src/main/opencv/
 
 rm -rf opencv-4.5.4-android-sdk.zip
 rm -rf opencv-4.5.4-ios-framework.zip
