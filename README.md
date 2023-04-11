@@ -17,5 +17,8 @@ dependencies:
 ```
 The reason we're adding plugins like this is because it's a work in progress and there are a lot of gaps, so we apologize for any inconvenience.
 
+### How to use the module 
+✍️Writing...
+
 ### And...
 If there's anything you'd like us to fix or add, please feel free to email us or request a PR. 
