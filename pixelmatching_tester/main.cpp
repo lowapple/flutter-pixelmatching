@@ -11,13 +11,13 @@ int main() {
     imageProcessor.initialize();
     printf("State Code: %d", imageProcessor.getStateCode());
     // Load Files
-    string aPath = "../assets/20230314_154034.jpg";
+    string aPath = "../sample/20230314_154034.jpg";
     Mat aImg = imread(aPath, IMREAD_COLOR);
     if (aImg.empty()) {
         cout << "Could not read the image: " << aPath << endl;
         return 1;
     }
-    string bPath = "../assets/20230322_140703.jpg";
+    string bPath = "../sample/20230322_140703.jpg";
     Mat bImg = imread(bPath, IMREAD_COLOR);
     if (bImg.empty()) {
         cout << "Could not read the image: " << bPath << endl;
