@@ -1,6 +1,7 @@
 #include "ImageConverter.h"
 
 namespace image_converter {
+    // TODO 타겟 이미지와 비율을 맞춰야할 것 같다.
     cv::Mat process(cv::Mat img) {
         cv::Mat gray;
         if (img.channels() == 3) {
