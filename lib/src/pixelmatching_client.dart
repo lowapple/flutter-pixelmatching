@@ -36,9 +36,7 @@ class Response {
   });
 }
 
-void init(
-  SendPort caller,
-) {
+void init(SendPort caller,) {
   _client = _PixelMatchingClient();
   _caller = caller;
 
@@ -102,6 +100,7 @@ void _handleMessage(message) {
 class _PixelMatchingClient {
   final _native = bindings.PixelMatchingBindings(_lib);
   var _imageBufferSize = 0;
+  var _imageTypeString = "";
 
   // Image Buffer
   Pointer<Uint8>? _imageBuffer;
@@ -127,8 +126,11 @@ class _PixelMatchingClient {
   double query(String imageType, Uint8List bytes, int w, int h, {int rotation = 0}) {
     if (_imageBuffer != null && _imageBufferSize != bytes.length) {
       malloc.free(_imageBuffer!);
-      malloc.free(_imageType!);
       _imageBuffer = null;
+    }
+    if (_imageType != null && imageType != _imageTypeString) {
+      malloc.free(_imageType!);
+      _imageType = null;
     }
     _imageBufferSize = bytes.length;
     _imageBuffer ??= malloc.allocate<Uint8>(_imageBufferSize);
