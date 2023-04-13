@@ -24,18 +24,13 @@ void ImageProcessor::initialize() {
 bool ImageProcessor::setMarker(Mat marker) {
     mutex.lock();
     StateCode oldState = getStateCode();
-    logger_i("[ImageProcessor] setMarker: %d", getStateCode());
     if (oldState != StateCode::NoMarker) {
         return false;
     }
     setStateCode(StateCode::Processing);
-    logger_i("[ImageProcessor] setMarker: %d", getStateCode());
     Mat converted = image_converter::process(marker);
-    logger_i("[ImageProcessor] setMarker process image");
     marker.release();
-    logger_i("[ImageProcessor] setMarker marker image release");
     if (compare.setMarker(converted)) {
-        logger_i("[ImageProcessor] setMarker set marker");
         setStateCode(StateCode::NoQuery);
         mutex.unlock();
         return true;
@@ -48,18 +43,13 @@ bool ImageProcessor::setMarker(Mat marker) {
 bool ImageProcessor::setQuery(Mat query) {
     mutex.lock();
     StateCode oldState = getStateCode();
-    logger_i("[ImageProcessor] setQuery: %d", getStateCode());
     if (oldState != StateCode::NoQuery) {
         return false;
     }
     setStateCode(StateCode::Processing);
-    logger_i("[ImageProcessor] setQuery: %d", getStateCode());
     Mat converted = image_converter::process(query);
-    logger_i("[ImageProcessor] setQuery process image");
     query.release();
-    logger_i("[ImageProcessor] setQuery query image release");
     if (compare.setQuery(converted)) {
-        logger_i("[ImageProcessor] setQuery set query");
         setStateCode(StateCode::NoQuery);
         mutex.unlock();
         return true;
@@ -69,7 +59,7 @@ bool ImageProcessor::setQuery(Mat query) {
     return false;
 }
 
-double ImageProcessor::confidence() {
+double ImageProcessor::getConfidenceRate() {
     return compare.getConfidenceRate();
 }
 

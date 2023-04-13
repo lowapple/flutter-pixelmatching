@@ -1,9 +1,8 @@
 #include "ImageConverter.h"
 
 namespace image_converter {
-    // TODO 타겟 이미지와 비율을 맞춰야할 것 같다.
     cv::Mat process(cv::Mat img) {
-        cv::Mat gray;
+        Mat gray;
         if (img.channels() == 3) {
             cv::cvtColor(img, gray, cv::COLOR_BGR2GRAY);
         } else if (img.channels() == 4) {
@@ -11,7 +10,15 @@ namespace image_converter {
         } else {
             gray = img;
         }
-        if (img.cols != Constants::sourceImageW || img.rows != Constants::sourceImageH) {
+
+        float imgRatio = (float) gray.cols / (float) gray.rows;
+        int cropW = gray.cols;
+        int cropH = (int) round((float) gray.rows * imgRatio);
+        int cropX = (int) round((float) (gray.cols - cropW) / 2.0f);
+        int cropY = (int) round((float) (gray.rows - cropH) / 2.0f);
+        cv::Rect roi(cropX, cropY, cropW, cropH);
+        gray = gray(roi);
+        if (gray.cols != Constants::sourceImageW || gray.rows != Constants::sourceImageH) {
             cv::resize(gray, gray, {Constants::sourceImageW, Constants::sourceImageH});
         }
         for (int r = 0; r < gray.rows; r++) {

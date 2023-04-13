@@ -25,7 +25,7 @@ public:
 
     bool setQuery(Mat query);
 
-    double confidence();
+    double getConfidenceRate();
 
     Mat getImageMarker();
 

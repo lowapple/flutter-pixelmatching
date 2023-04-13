@@ -99,7 +99,7 @@ double getQueryConfidenceRate() {
     if (processor == nullptr) {
         return -1;
     }
-    return processor->confidence();
+    return processor->getConfidenceRate();
 }
 
 FUNCTION_ATTRIBUTE

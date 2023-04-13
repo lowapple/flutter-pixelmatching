@@ -140,7 +140,6 @@ bool ImageCompare::compare() {
 }
 
 bool ImageCompare::setMarker(cv::Mat marker) {
-    logger_i("[ImageCompare] setMarker");
     imageMarker.release();
     imageMarker = marker.clone();
     if (imageMarker.empty()) {
@@ -158,18 +157,15 @@ bool ImageCompare::setMarker(cv::Mat marker) {
         return false;
     }
     if (descriptorsMarker.rows < Constants::knn) {
-        logger_e("[ImageCompare] marker descriptions is too small");
         return false;
     }
     return true;
 }
 
 bool ImageCompare::setQuery(cv::Mat query) {
-    logger_i("[ImageCompare] setQuery");
     imageQuery.release();
     imageQuery = query.clone();
     if (imageQuery.empty()) {
-        logger_e("[ImageCompare] query image is empty");
         return false;
     }
     keypointsQuery.clear();
@@ -180,22 +176,18 @@ bool ImageCompare::setQuery(cv::Mat query) {
     cvMatchers->add(descriptorsQuery);
     query.release();
     if (descriptorsQuery.empty()) {
-        logger_e("[ImageCompare] query descriptions is empty");
         return false;
     }
     if (descriptorsQuery.rows < Constants::knn) {
-        logger_e("[ImageCompare] marker descriptions is too small");
         return false;
     }
     return compare();
 }
 
 double ImageCompare::getConfidenceRate() {
-    logger_i("[pixelmatching] getConfidenceRate");
     if (imageMarkerMasked.empty() || imageQueryAligned.empty()) {
         return -1.0;
     }
-    logger_i("[pixelmatching] clahe apply");
     Mat res;
     clahe->apply(imageMarker, imageEqualizedMarker);
     clahe->apply(imageQueryAligned, imageEqualizedQuery);
