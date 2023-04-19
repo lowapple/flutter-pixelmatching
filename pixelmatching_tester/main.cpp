@@ -11,13 +11,18 @@ int main() {
     imageProcessor.initialize();
     cout << "State Code: " << imageProcessor.getStateCode() << endl;
     // Load Files
-    string aPath = "../a/a.jpg";
+    string aPath = "../c/IMG_7169.jpeg";
     Mat aImg = imread(aPath, IMREAD_COLOR);
+    // 감마 조정 하기
+    double alpha = 2.91; /*< Simple contrast control */
+    int beta = 70;       /*< Simple brightness control */
+//    aImg.convertTo(aImg, -1, alpha, beta);
+
     if (aImg.empty()) {
         cout << "Could not read the image: " << aPath << endl;
         return 1;
     }
-    string bPath = "../b/10.jpeg";
+    string bPath = "../c/IMG_7175.jpeg";
     Mat bImg = imread(bPath, IMREAD_COLOR);
     if (bImg.empty()) {
         cout << "Could not read the image: " << bPath << endl;
