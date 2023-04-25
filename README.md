@@ -39,7 +39,7 @@ dependencies:
   flutter_pixelmatching:
     path: ../flutter_pixelmatching
 ```
-The reason we're adding plugins like this is because it's a work in progress and there are a lot of gaps, so we apologize for any inconvenience.
+We're adding plugins like this because it's a work in progress and there are many gaps. If you come up with a better way, let us know and we'll update it.
 
 ## How to use the module 
 ```dart
