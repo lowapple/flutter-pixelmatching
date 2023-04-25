@@ -1,8 +1,30 @@
 # Flutter PixelMatching
 
-| Module to perform feature matching using OpenCV
-## Example
+> Module to perform feature matching using OpenCV
 
+An image comparison module written as an exercise in Flutter FFI and out of a need for that functionality. It is called PixelMatching, but it is actually a FeatureMatching module utilizing OpenCV. Isolate was utilized for asynchronous processing.
+For the internal functionality, it was written in C++. 
+
+The matching algorithm is using **FLannBasedMatcher**, and for the detector, **Andorid uses SIFT** **iOS uses KAZE**.
+
+There is currently no method to change the algorithm, so if you want to change the algorithm and test it, please refer to `ios/Classes/src/ImageProcessor.cpp` and change it.
+```c++
+ImageProcessor::ImageProcessor() : stateCode(NotInitialized) {
+
+    compare.setMatchers(cv::DescriptorMatcher::create(DescriptorMatcher::MatcherType::FLANNBASED));
+#ifdef __ANDROID__
+    compare.setDetector(cv::SIFT::create());
+#elif __APPLE__
+    compare.setDetector(cv::KAZE::create());
+#endif
+}
+```
+
+## Sample Application
+
+This is a simple sample application. It is written just enough to make it simple to use.
+
+![sample](https://user-images.githubusercontent.com/26740046/234154847-d3199f18-b262-45f1-8b9f-4153e11b5f80.png)
 
 ## How to install
 1. Navigate to the root directory of your project.
