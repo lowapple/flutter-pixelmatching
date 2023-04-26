@@ -1,7 +1,7 @@
 name: flutter_pixelmatching
-description: Pixelmatching plugin with OpenCV
+description: Module to perform feature matching using OpenCV
 version: 0.1.1
-homepage: https://younjs.space
+homepage: https://github.com/lowapple/flutter_pixelmatching
 
 environment:
   sdk: '>=2.19.5 <3.0.0'
