@@ -135,6 +135,7 @@ class _PixelMatchingClient {
     _imageBufferSize = bytes.length;
     _imageBuffer ??= malloc.allocate<Uint8>(_imageBufferSize);
     _imageType ??= imageType.toNativeUtf8();
+    _imageTypeString = imageType;
 
     // 이미지 내용 복사
     var imageBufferList = _imageBuffer!.asTypedList(_imageBufferSize);
@@ -151,9 +152,7 @@ class _PixelMatchingClient {
   imglib.Image? getMarkerQueryDifferenceImage() {
     _debugImageLen ??= malloc.allocate<Int>(1);
     _debugImageLen?.value = 0;
-    print("getMarkerQueryDifferenceImage len: ${_debugImageLen?.value}");
     final imgPointer = _native.getMarkerQueryDifferenceImage(_debugImageLen!);
-    print("getMarkerQueryDifferenceImage len: ${_debugImageLen?.value}");
     if (imgPointer.address == nullptr.address) {
       return null;
     }
