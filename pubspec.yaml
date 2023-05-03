@@ -1,6 +1,6 @@
 name: flutter_pixelmatching
 description: Module to perform feature matching using OpenCV
-version: 0.1.3
+version: 0.1.4
 homepage: https://github.com/lowapple/flutter_pixelmatching
 
 environment:
