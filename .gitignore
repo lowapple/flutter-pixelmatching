@@ -1,9 +1,4 @@
-#OpenCV Cache
-/download
-/include
-
 # Ignore cmake build directories
-opencv/
 cmake-build-debug/
 
 # But include the other files in cmakeLibs
@@ -12,8 +7,6 @@ cmake-build-debug/
 
 # Except for libopencv_java4.so
 cmakeLibs/**/libopencv_java4.so
-
-ios/opencv2.framework
 
 # Miscellaneous
 *.class

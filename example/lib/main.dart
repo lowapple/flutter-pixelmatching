@@ -109,7 +109,7 @@ class _MyAppState extends State<MyApp> {
         },
         child: Scaffold(
           appBar: AppBar(
-            title: const Text('픽셀매칭'),
+            title: const Text('PixelMatching Sample'),
           ),
           body: controller == null
               ? Column(
@@ -129,7 +129,7 @@ class _MyAppState extends State<MyApp> {
                         }
                       },
                       child: const Text(
-                        "이미지 선택",
+                        "From Gallery",
                         style: TextStyle(fontSize: 18.0),
                       ),
                     ),
@@ -147,7 +147,7 @@ class _MyAppState extends State<MyApp> {
                         }
                       },
                       child: const Text(
-                        "카메라 찍기",
+                        "From Camera",
                         style: TextStyle(fontSize: 18.0),
                       ),
                     ),
