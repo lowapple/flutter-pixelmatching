@@ -10,6 +10,8 @@ import 'pixelmatching_state.dart';
 
 final DynamicLibrary _lib = Platform.isAndroid ? DynamicLibrary.open("libflutter_pixelmatching.so") : DynamicLibrary.process();
 
+final _native = bindings.PixelMatchingBindings(_lib);
+
 late _PixelMatchingClient _client;
 
 late SendPort _caller;
@@ -98,7 +100,6 @@ void _handleMessage(message) {
 }
 
 class _PixelMatchingClient {
-  final _native = bindings.PixelMatchingBindings(_lib);
   var _imageBufferSize = 0;
   var _imageTypeString = "";
 

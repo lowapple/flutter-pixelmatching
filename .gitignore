@@ -5,8 +5,7 @@ cmake-build-debug/
 !cmakeLibs/CMakeLists.txt
 !cmakeLibs/some_other_file.txt
 
-# Except for libopencv_java4.so
-cmakeLibs/**/libopencv_java4.so
+ios/Classes/
 
 # Miscellaneous
 *.class
