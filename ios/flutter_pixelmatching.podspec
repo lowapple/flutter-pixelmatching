@@ -18,11 +18,14 @@ This project is a Flutter plugin that compares two images and outputs their simi
   # Flutter.framework does not contain a i386 slice.
   s.pod_target_xcconfig   = {
     'DEFINES_MODULE'      => 'YES', 'EXCLUDED_ARCHS[sdk=iphonesimulator*]' => 'i386',
-    'OTHER_CFLAGS'        => '-Wno-documentation',
-    'CODE_SIGN_IDENTITY'  => 'iPhone Developer', 'CODE_SIGNING_REQUIRED' => 'NO'
   }
-
+  s.xcconfig = {
+    'CLANG_CXX_LANGUAGE_STANDARD' => 'c++20',
+    'OTHER_LDFLAGS' => '-framework opencv2 -all_load'
+  }
   # Pixelmatching
   s.dependency              'OpenCV', '4.3.0'
+  s.library               = 'c++'
   s.static_framework      = true
+  s.module_map            = 'flutter_pixelmatching.modulemap'
 end

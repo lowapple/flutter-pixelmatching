@@ -5,7 +5,7 @@ description: Demonstrates how to use the flutter_pixelmatching plugin.
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 
 environment:
-  sdk: '>=2.19.5 <3.0.0'
+  sdk: '>=2.19.0 <3.0.0'
 
 # Dependencies specify other packages that your package needs in order to work.
 # To automatically upgrade your package dependencies to the latest versions
@@ -31,6 +31,7 @@ dependencies:
   camera: ^0.10.3+2
   permission_handler: ^10.2.0
   image_picker: ^0.8.7+1
+  flutter_zxing: ^1.1.2
 
 dev_dependencies:
   flutter_test:
