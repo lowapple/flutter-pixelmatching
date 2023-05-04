@@ -56,7 +56,9 @@ class _MyAppState extends State<MyApp> {
       camera,
       ResolutionPreset.medium,
       enableAudio: false,
-      imageFormatGroup: Platform.isAndroid ? ImageFormatGroup.jpeg : ImageFormatGroup.bgra8888,
+      imageFormatGroup: Platform.isAndroid
+          ? ImageFormatGroup.jpeg
+          : ImageFormatGroup.bgra8888,
     );
     controller!.initialize().then(
       (_) {
@@ -72,7 +74,9 @@ class _MyAppState extends State<MyApp> {
   }
 
   cameraStream(CameraImage cameraImage) async {
-    if (_isRunning || !mounted || DateTime.now().millisecondsSinceEpoch - _lastRun < 50) return;
+    if (_isRunning ||
+        !mounted ||
+        DateTime.now().millisecondsSinceEpoch - _lastRun < 50) return;
     this.cameraImage = cameraImage;
     final status = await matching?.getStateCode();
     print(status);
@@ -83,7 +87,8 @@ class _MyAppState extends State<MyApp> {
       final img = cameraImage.planes[0].bytes;
       final w = cameraImage.width;
       final h = cameraImage.height;
-      final confidence = await matching?.setQuery(imgType, img, w, h, rotation: rotation);
+      final confidence =
+          await matching?.setQuery(imgType, img, w, h, rotation: rotation);
       print(confidence);
       final preview = await matching?.getMarkerQueryDifferenceImage();
       if (preview != null) {
@@ -120,10 +125,14 @@ class _MyAppState extends State<MyApp> {
                     TextButton(
                       onPressed: () async {
                         final imagePicker = ImagePicker();
-                        final xImage = await imagePicker.pickImage(source: ImageSource.gallery);
+                        final xImage = await imagePicker.pickImage(
+                            source: ImageSource.gallery);
                         if (xImage != null) {
                           final image = await imglib.decodeJpgFile(xImage.path);
-                          matching?.initialize("jpeg", imglib.encodeJpg(image!), image.width, image.height).then((value) {
+                          matching
+                              ?.initialize("jpeg", imglib.encodeJpg(image!),
+                                  image.width, image.height)
+                              .then((value) {
                             init();
                           });
                         }
@@ -136,10 +145,14 @@ class _MyAppState extends State<MyApp> {
                     TextButton(
                       onPressed: () async {
                         final imagePicker = ImagePicker();
-                        final xImage = await imagePicker.pickImage(source: ImageSource.camera);
+                        final xImage = await imagePicker.pickImage(
+                            source: ImageSource.camera);
                         if (xImage != null) {
                           final image = await imglib.decodeJpgFile(xImage.path);
-                          matching?.initialize("jpeg", imglib.encodeJpg(image!), image.width, image.height).then((value) {
+                          matching
+                              ?.initialize("jpeg", imglib.encodeJpg(image!),
+                                  image.width, image.height)
+                              .then((value) {
                             if (value) {
                               init();
                             }
