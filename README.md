@@ -1,6 +1,15 @@
 # Flutter PixelMatching
 
-> Module to perform feature matching using OpenCV
+<p align="center">
+<a href="https://pub.dev/packages/flutter_pixelmatching"><img src="https://img.shields.io/pub/v/flutter_pixelmatching.svg" alt="Pub"></a>
+<a href="https://github.com/lowapple/flutter_pixelmatching/actions"><img src="https://github.com/lowapple/flutter_pixelmatching/actions/workflows/main.yml/badge.svg" alt="build"></a>
+<a href="https://codecov.io/gh/lowapple/flutter_pixelmatching">
+  <img src="https://codecov.io/gh/lowapple/flutter_pixelmatching/branch/main/graph/badge.svg"/>
+</a>
+<a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/badge/license-MIT-purple.svg" alt="License: MIT"></a>
+</p>
+
+> Plugin to perform feature matching using OpenCV
 
 An image comparison module written as an exercise in Flutter FFI and out of a need for that functionality. It is called PixelMatching, but it is actually a FeatureMatching module utilizing OpenCV. Isolate was utilized for asynchronous processing.
 For the internal functionality, it was written in C++. 
@@ -10,7 +19,6 @@ The matching algorithm is using **FLannBasedMatcher**, and for the detector, **A
 There is currently no method to change the algorithm, so if you want to change the algorithm and test it, please refer to `ios/Classes/src/ImageProcessor.cpp` and change it.
 ```c++
 ImageProcessor::ImageProcessor() : stateCode(NotInitialized) {
-
     compare.setMatchers(cv::DescriptorMatcher::create(DescriptorMatcher::MatcherType::FLANNBASED));
 #ifdef __ANDROID__
     compare.setDetector(cv::SIFT::create());
@@ -20,28 +28,35 @@ ImageProcessor::ImageProcessor() : stateCode(NotInitialized) {
 }
 ```
 
-## Sample Application
-
-This is a simple sample application. It is written just enough to make it simple to use.
+## Demo Screenshots
 
 ![sample](https://user-images.githubusercontent.com/26740046/234154847-d3199f18-b262-45f1-8b9f-4153e11b5f80.png)
 
-## How to install
-1. Navigate to the root directory of your project.
-2. Clone the Flutter Pixelmatching repository using the following command: `git clone https://github.com/lowapple/flutter_pixelmatching`
-3. Change your current directory to the Flutter project directory using the command `cd $flutter_pixelmatching`.
-4. Run the initialization script by typing `. ./init.sh` in your terminal.
-5. Open the pubspec.yaml file in your Flutter project.
-6. Append the following lines to the dependencies section of the pubspec.yaml file:
+## Features
+* Plugins utilizing OpenCV
+* Perform image comparisons on camera streams (mobile platforms only), image files.
+* Compares image features to calculate and return similarity
+
+## Supported platforms
+Flutter PixelMatching is available for Android and iOS.
+
+* Android (min SDK 24)
+* iOS (min iOS version 11.0)
+
+flutter_pixelmatching is currently written to be available only on mobile and there are no plans for other platforms.
+
+## Getting started
+### Installing dependencies
+```yaml
+flutter pub add flutter_pixelmatching
+```
+or
 ```yaml
 dependencies:
-  ...
-  flutter_pixelmatching:
-    path: ../flutter_pixelmatching
+  flutter_pixelmatching: ^0.1.5
 ```
-We're adding plugins like this because it's a work in progress and there are many gaps. If you come up with a better way, let us know and we'll update it.
 
-## How to use the module 
+### Usage 
 ```dart
 final matching = PixelMatching();
 ```
@@ -109,5 +124,5 @@ if (preview != null) {
 }
 ```
 
-## And...
-If there's anything you'd like us to fix or add, please feel free to email us or request a PR. 
+## License
+MIT License. See [LICENSE](LICENSE) for details.

@@ -1,3 +1,10 @@
+## 0.1.5
+* [Fix] Fixed Android build .so file merging errors
+* [Update] Revised installation method and updated related information
+
+## 0.1.4
+* [Fix] Fixed iOS builds failing to call native method due to symbolic link error
+
 ## 0.1.3
 * [Update] Embed the OpenCV include file directly inside the plugin because it was inconvenient to install the plugin using an existing script
 * [Update] Converted internal example text to English
