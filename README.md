@@ -125,5 +125,9 @@ if (preview != null) {
 }
 ```
 
+## ⚠️ Issue
+
+Currently, for ease of use, the libopencv_java4.so binary file is included inside the plugin. I know it's not recommended, but it's there so you can try it out quickly. If you are using the OpenCV module in another plugin, it may cause conflicts. Please note that.
+
 ## License
 MIT License. See [LICENSE](LICENSE) for details.

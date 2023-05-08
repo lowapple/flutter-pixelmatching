@@ -1,3 +1,6 @@
+## 0.1.6
+* [Fix] Fixed to not build the x86 version. Flutter Android does not generate x86 release.
+
 ## 0.1.5
 * [Fix] Fixed Android build .so file merging errors
 * [Update] Revised installation method and updated related information
