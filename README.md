@@ -34,9 +34,15 @@ ImageProcessor::ImageProcessor() : stateCode(NotInitialized) {
 ![sample](https://user-images.githubusercontent.com/26740046/234154847-d3199f18-b262-45f1-8b9f-4153e11b5f80.png)
 
 ## Features
-* Plugins utilizing OpenCV
-* Perform image comparisons on camera streams (mobile platforms only), image files.
-* Compares image features to calculate and return similarity
+* [x] Plugins utilizing OpenCV
+* [x] Perform image comparisons on camera streams (mobile platforms only), image files.
+* [x] Compares image features to calculate and return similarity
+
+## Todo
+* [ ] Write plugin test code
+* [ ] Reduce the overall size of the plugin 
+  * [x] Do not build x86 [Flutter Building the app for release](https://docs.flutter.dev/deployment/android#build-an-app-bundle)
+  * [ ] Find a way to avoid importing third-party library sources directly inside the plugin
 
 ## Supported platforms
 Flutter PixelMatching is available for Android and iOS.
@@ -124,6 +130,10 @@ if (preview != null) {
   });
 }
 ```
+
+## ⚠️ Issue
+
+Currently, for ease of use, the libopencv_java4.so binary file is included inside the plugin. I know it's not recommended, but it's there so you can try it out quickly. If you are using the OpenCV module in another plugin, it may cause conflicts. Please note that.
 
 ## License
 MIT License. See [LICENSE](LICENSE) for details.

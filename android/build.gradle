@@ -59,8 +59,18 @@ android {
     lintOptions {
         disable 'InvalidPackage'
     }
-    
+
     packagingOptions {
         pickFirst '**/libopencv_java4.so'
+    }
+
+    // https://docs.flutter.dev/deployment/android#build-an-app-bundle
+    splits {
+        abi {
+            enable true
+            reset()
+            include 'armeabi-v7a', 'arm64-v8a', 'x86_64'
+            universalApk false
+        }
     }
 }
