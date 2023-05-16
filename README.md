@@ -62,6 +62,14 @@ or
 dependencies:
   flutter_pixelmatching: ^0.1.5
 ```
+#### XCode 
+Symbolic errors in the archive when using the FFi module.<br/>
+For this issue, check out the following link https://github.com/dart-lang/ffi/issues/41#issuecomment-645550964
+
+**Runner -> Build Settings -> Strip Style -> change from "All Symbols" to "Non-Global Symbols"**
+
+![XCode-Settings](https://github.com/lowapple/flutter_pixelmatching/assets/26740046/929dc7f7-40c4-4d49-95fe-d5b57346a931)
+
 
 ### Usage 
 ```dart
