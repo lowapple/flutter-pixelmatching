@@ -1,4 +1,4 @@
-# Flutter PixelMatching
+<h1 align="center">image feature matching for Flutter</h1>
 
 <p align="center">
 <a href="https://pub.dev/packages/flutter_pixelmatching"><img src="https://img.shields.io/pub/v/flutter_pixelmatching.svg" alt="Pub"></a>
