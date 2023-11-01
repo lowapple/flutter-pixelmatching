@@ -31,18 +31,12 @@ ImageProcessor::ImageProcessor() : stateCode(NotInitialized) {
 
 ## Demo Screenshots
 
-![sample](https://user-images.githubusercontent.com/26740046/234154847-d3199f18-b262-45f1-8b9f-4153e11b5f80.png)
+![Demo Screenshot](./resources/demo_sample.png)
 
 ## Features
 * [x] Plugins utilizing OpenCV
 * [x] Perform image comparisons on camera streams (mobile platforms only), image files.
 * [x] Compares image features to calculate and return similarity
-
-## Todo
-* [ ] Write plugin test code
-* [ ] Reduce the overall size of the plugin 
-  * [x] Do not build x86 [Flutter Building the app for release](https://docs.flutter.dev/deployment/android#build-an-app-bundle)
-  * [ ] Find a way to avoid importing third-party library sources directly inside the plugin
 
 ## Supported platforms
 Flutter PixelMatching is available for Android and iOS.
@@ -60,7 +54,7 @@ flutter pub add flutter_pixelmatching
 or
 ```yaml
 dependencies:
-  flutter_pixelmatching: ^0.1.5
+  flutter_pixelmatching: ^1.0.0
 ```
 #### XCode 
 Symbolic errors in the archive when using the FFi module.<br/>
@@ -72,72 +66,22 @@ For this issue, check out the following link https://github.com/dart-lang/ffi/is
 
 
 ### Usage 
+For image data passed as parameters, we support [CameraImage](https://pub.dev/packages/camera), Image from the [Image plugin](https://pub.dev/packages/image), and Uint8List of images.
 ```dart
 final matching = PixelMatching();
+// setup target image
+await matching?.initialize(image: image);
+// compare image 
+final double? similarity = await matching?.similarity(cameraImage);
 ```
-```dart
-// An enum value indicating the processing status of the module. If a marker is registered after initialization, it will change to the 'noQuery' state. 
-enum PixelMatchingState {
-  // The pixel matching is not initialized.
-  notInitialized,
-  // target image is not set.
-  noMarker,
-  // query image is not set.
-  noQuery,
-  // is processing.
-  processing,
-}
-```
-
-### Initialize
-Initialize while registering the marker image.<br/>
-**Support ImageType jpeg/bgra8888**<br/>
-For ease of image handling, we currently support two image types. 
-```dart
-// from Camera Stream 
-final imgType = Platform.isAndroid ? "jpeg" : "bgra8888";
-final img = cameraImage.planes[0].bytes;
-final w = cameraImage.width;
-final h = cameraImage.height;
-matching?.initialize(imgType, img, w, h);
-```
-```dart
-// from ImagePicker
-final imagePicker = ImagePicker();
-final xImage = await imagePicker.pickImage(source: ImageSource.camera);
-if (xImage != null) {
-  final image = await imglib.decodeJpgFile(xImage.path);
-  matching?.initialize("jpeg", imglib.encodeJpg(image!), image.width, image.height);
-}
-```
-### Query
-Calculates the current similarity compared to the registered image at initialization.
-```dart
-final status = await matching.getStateCode();
-if(status == PixelMatchingState.noQuery) {
-  final imgType = Platform.isAndroid ? "jpeg" : "bgra8888";
-  final img = cameraImage.planes[0].bytes;
-  final w = cameraImage.width;
-  final h = cameraImage.height;
-  final confidence = await matching?.setQuery(imgType, img, w, h, rotation: rotation);
-  print(confidence);
-  setState(() {
-    similarity = confidence ?? 0.0;
-  });
-}
-```
-### MarkerQueryDifferenceImage
-Functions to visually see which images are currently being processed. This is an optional function that is provided separately to ensure that images are being processed well during development.
-
-```dart
-// Use package:image for functional convenience
-imglib.Image? preview = await matching?.getMarkerQueryDifferenceImage();
-if (preview != null) {
-  setState(() {
-    previewImage = imglib.encodeJpg(preview);
-  });
-}
-```
+#### support CameraImage ImageFormatGroup
+A list of currently supported ImageFormats for CameraImages. We added the YUV420 format due to issues with JPEG during recent development. 
+|ImageFormatGroup|Android|iOS|
+|----------------|-------|---|
+|yuv420          |  ✅   | ✅|
+|jpeg            |  ✅   | ✅|
+|bgra8888        |  ❌   | ✅|
+|nv21            |  ❌   | ❌|
 
 ## ⚠️ Issue
 

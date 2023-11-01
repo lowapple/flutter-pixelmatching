@@ -1,3 +1,10 @@
+## 1.0.0
+* [Feature] Add a binding to change the Yuv420_888 image format to RGB format
+* [Fix] Fixed return value false on initialize call after initialization
+* [Fix] Fixed data loss due to CROP during internal image processing
+* [Update] Update plugin interface
+* [Update] Update plugin demo application
+
 ## 0.1.6
 * [Fix] Fixed to not build the x86 version. Flutter Android does not generate x86 release.
 

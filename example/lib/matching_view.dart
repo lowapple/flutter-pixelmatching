@@ -1,8 +1,7 @@
-import 'dart:io';
-
 import 'package:camera/camera.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+// ignore: depend_on_referenced_packages
 import 'package:image/image.dart' as imglib;
 import 'package:flutter_pixelmatching/flutter_pixelmatching.dart';
 
