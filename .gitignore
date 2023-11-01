@@ -37,3 +37,5 @@ migrate_working_dir/
 .dart_tool/
 .packages
 build/
+android/src/main/jniLibs/x86/libopencv_java4.so
+ios/opencv2.framework/*

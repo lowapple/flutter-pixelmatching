@@ -20,6 +20,7 @@ add_executable(
         ${dirs_pixelmatching}/ImageCompare.cpp
         ${dirs_pixelmatching}/DebugLogger.cpp
         ${dirs_pixelmatching}/PixelMatching.cpp
+        ${dirs_pixelmatching}/YuvToRGB.cpp
         main.cpp
 )
 target_link_libraries(pixelmatching_tester ${OpenCV_LIBS})

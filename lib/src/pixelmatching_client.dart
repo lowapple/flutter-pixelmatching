@@ -3,18 +3,25 @@ import 'dart:io';
 import 'dart:isolate';
 import 'dart:typed_data';
 
+import 'package:camera/camera.dart';
 import 'package:ffi/ffi.dart';
+import 'package:flutter/foundation.dart';
 import 'package:image/image.dart' as imglib;
+import '../flutter_pixelmatching.dart';
 import 'pixelmatching_bindings.dart' as bindings;
 import 'pixelmatching_state.dart';
 
-final DynamicLibrary _lib = Platform.isAndroid ? DynamicLibrary.open("libflutter_pixelmatching.so") : DynamicLibrary.process();
+final DynamicLibrary _lib = Platform.isAndroid
+    ? DynamicLibrary.open("libflutter_pixelmatching.so")
+    : DynamicLibrary.process();
 
 final _native = bindings.PixelMatchingBindings(_lib);
 
 late _PixelMatchingClient _client;
 
 late SendPort _caller;
+
+int _cacheMarkerHash = 0;
 
 class Request {
   int id;
@@ -38,7 +45,9 @@ class Response {
   });
 }
 
-void init(SendPort caller,) {
+void init(
+  SendPort caller,
+) {
   _client = _PixelMatchingClient();
   _caller = caller;
 
@@ -69,7 +78,8 @@ void _handleMessage(message) {
         final w = message.params['width'] as int;
         final h = message.params['height'] as int;
         final rotation = message.params['rotation'] as int;
-        final res = _client.setTargetImageFromBytes(imageType, image, w, h, rotation: rotation);
+        final res = _client.setTargetImageFromBytes(imageType, image, w, h,
+            rotation: rotation);
         _caller.send(Response(id: message.id, data: res));
         break;
       case "getStateCode":
@@ -87,7 +97,15 @@ void _handleMessage(message) {
           final width = message.params['width'] as int;
           final height = message.params['height'] as int;
           final rotation = message.params['rotation'] as int;
-          final res = _client.query(imageType, image, width, height, rotation: rotation);
+          final res = _client.query(imageType, image, width, height,
+              rotation: rotation);
+          _caller.send(Response(id: message.id, data: res));
+        }
+        break;
+      case "cameraImageToQuery":
+        if (message.params is CameraImage) {
+          final image = message.params as CameraImage;
+          final res = cameraImageToQuery(_native, image);
           _caller.send(Response(id: message.id, data: res));
         }
         break;
@@ -112,19 +130,22 @@ class _PixelMatchingClient {
     _native.initialize();
   }
 
-  bool setTargetImageFromBytes(String imageType, Uint8List bytes, int w, int h, {int rotation = 0}) {
+  bool setTargetImageFromBytes(String imageType, Uint8List bytes, int w, int h,
+      {int rotation = 0}) {
     var totalSize = bytes.length;
     var imgBuffer = malloc.allocate<Uint8>(totalSize);
     var imgBufferList = imgBuffer.asTypedList(totalSize);
     var imgType = imageType.toNativeUtf8();
     imgBufferList.setAll(0, bytes);
-    var res = _native.setMarker(imgType.cast(), imgBuffer.cast(), w, h, rotation);
+    var res =
+        _native.setMarker(imgType.cast(), imgBuffer.cast(), w, h, rotation);
     malloc.free(imgBuffer);
     malloc.free(imgType);
     return res;
   }
 
-  double query(String imageType, Uint8List bytes, int w, int h, {int rotation = 0}) {
+  double query(String imageType, Uint8List bytes, int w, int h,
+      {int rotation = 0}) {
     if (_imageBuffer != null && _imageBufferSize != bytes.length) {
       malloc.free(_imageBuffer!);
       _imageBuffer = null;
@@ -142,7 +163,8 @@ class _PixelMatchingClient {
     var imageBufferList = _imageBuffer!.asTypedList(_imageBufferSize);
     imageBufferList.setAll(0, bytes);
 
-    var res = _native.setQuery(_imageType!.cast(), _imageBuffer!.cast(), w, h, rotation);
+    var res = _native.setQuery(
+        _imageType!.cast(), _imageBuffer!.cast(), w, h, rotation);
     if (res) {
       return _confidence();
     } else {

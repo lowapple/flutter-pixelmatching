@@ -27,6 +27,7 @@ add_library(
         ../src/ImageProcessor.cpp
         ../src/ImageCompare.cpp
         ../src/PixelMatching.cpp
+        ../src/YuvToRGB.cpp
 )
 set(BUILD_WRITERS ON)
 

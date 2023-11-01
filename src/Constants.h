@@ -12,7 +12,7 @@ using namespace cv;
 
 class Constants {
 public:
-    static constexpr int knn = 2;
+    static constexpr int knn = 4;
     static constexpr float threshold = 0.7f;
     static constexpr int sourceImageW = 256;
     static constexpr int sourceImageH = 256;
