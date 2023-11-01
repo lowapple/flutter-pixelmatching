@@ -24,7 +24,7 @@ bool initialize() {
         processor->initialize();
         return true;
     }
-    return false;
+    return true;
 }
 
 FUNCTION_ATTRIBUTE
