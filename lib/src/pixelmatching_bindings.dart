@@ -40,8 +40,8 @@ class PixelMatchingBindings {
 
   /// @return set marker result
   bool setMarker(
-    ffi.Pointer<ffi.UnsignedChar> imageType,
-    ffi.Pointer<ffi.UnsignedChar> image,
+    ffi.Pointer<ffi.Char> imageType,
+    ffi.Pointer<ffi.Uint8> image,
     int width,
     int height,
     int rotation,
@@ -58,19 +58,19 @@ class PixelMatchingBindings {
   late final _setMarkerPtr = _lookup<
       ffi.NativeFunction<
           ffi.Bool Function(
-              ffi.Pointer<ffi.UnsignedChar>,
-              ffi.Pointer<ffi.UnsignedChar>,
+              ffi.Pointer<ffi.Char>,
+              ffi.Pointer<ffi.Uint8>,
               ffi.Int,
               ffi.Int,
               ffi.Int)>>('setMarker');
   late final _setMarker = _setMarkerPtr.asFunction<
-      bool Function(ffi.Pointer<ffi.UnsignedChar>,
-          ffi.Pointer<ffi.UnsignedChar>, int, int, int)>();
+      bool Function(ffi.Pointer<ffi.Char>, ffi.Pointer<ffi.Uint8>, int,
+          int, int)>();
 
   /// @return set query result
   bool setQuery(
-    ffi.Pointer<ffi.UnsignedChar> imageType,
-    ffi.Pointer<ffi.UnsignedChar> image,
+    ffi.Pointer<ffi.Char> imageType,
+    ffi.Pointer<ffi.Uint8> image,
     int width,
     int height,
     int rotation,
@@ -87,14 +87,14 @@ class PixelMatchingBindings {
   late final _setQueryPtr = _lookup<
       ffi.NativeFunction<
           ffi.Bool Function(
-              ffi.Pointer<ffi.UnsignedChar>,
-              ffi.Pointer<ffi.UnsignedChar>,
+              ffi.Pointer<ffi.Char>,
+              ffi.Pointer<ffi.Uint8>,
               ffi.Int,
               ffi.Int,
               ffi.Int)>>('setQuery');
   late final _setQuery = _setQueryPtr.asFunction<
-      bool Function(ffi.Pointer<ffi.UnsignedChar>,
-          ffi.Pointer<ffi.UnsignedChar>, int, int, int)>();
+      bool Function(ffi.Pointer<ffi.Char>, ffi.Pointer<ffi.Uint8>, int,
+          int, int)>();
 
   /// match marker and query
   /// @return match confidence rate
@@ -110,7 +110,7 @@ class PixelMatchingBindings {
 
   /// @param size output image size
   /// @return output image bytes(encoded by jpeg)
-  ffi.Pointer<ffi.UnsignedChar> getMarkerQueryDifferenceImage(
+  ffi.Pointer<ffi.Uint8> getMarkerQueryDifferenceImage(
     ffi.Pointer<ffi.Int> size,
   ) {
     return _getMarkerQueryDifferenceImage(
@@ -120,11 +120,11 @@ class PixelMatchingBindings {
 
   late final _getMarkerQueryDifferenceImagePtr = _lookup<
       ffi.NativeFunction<
-          ffi.Pointer<ffi.UnsignedChar> Function(
+          ffi.Pointer<ffi.Uint8> Function(
               ffi.Pointer<ffi.Int>)>>('getMarkerQueryDifferenceImage');
   late final _getMarkerQueryDifferenceImage =
       _getMarkerQueryDifferenceImagePtr.asFunction<
-          ffi.Pointer<ffi.UnsignedChar> Function(ffi.Pointer<ffi.Int>)>();
+          ffi.Pointer<ffi.Uint8> Function(ffi.Pointer<ffi.Int>)>();
 
   void dispose() {
     return _dispose();
@@ -133,4 +133,50 @@ class PixelMatchingBindings {
   late final _disposePtr =
       _lookup<ffi.NativeFunction<ffi.Void Function()>>('dispose');
   late final _dispose = _disposePtr.asFunction<void Function()>();
+
+  ffi.Pointer<ffi.Uint8> YuvToRGB(
+    ffi.Pointer<ffi.Uint8> plane0,
+    ffi.Pointer<ffi.Uint8> plane1,
+    ffi.Pointer<ffi.Uint8> plane2,
+    int bytesPerRow,
+    int bytesPerPixel,
+    int width,
+    int height,
+  ) {
+    return _yuvToJpeg(
+      plane0,
+      plane1,
+      plane2,
+      bytesPerRow,
+      bytesPerPixel,
+      width,
+      height,
+    );
+  }
+
+  late final _YuvToRGBPtr = _lookup<
+      ffi.NativeFunction<
+          ffi.Pointer<ffi.Uint8> Function(
+              ffi.Pointer<ffi.Uint8>,
+              ffi.Pointer<ffi.Uint8>,
+              ffi.Pointer<ffi.Uint8>,
+              ffi.Int32,
+              ffi.Int32,
+              ffi.Int32,
+              ffi.Int32)>>('YuvToRGB');
+  late final _yuvToJpeg = _YuvToRGBPtr.asFunction<
+      ffi.Pointer<ffi.Uint8> Function(
+          ffi.Pointer<ffi.Uint8>,
+          ffi.Pointer<ffi.Uint8>,
+          ffi.Pointer<ffi.Uint8>,
+          int,
+          int,
+          int,
+          int)>();
 }
+
+const int __bool_true_false_are_defined = 1;
+
+const int true1 = 1;
+
+const int false1 = 0;

@@ -5,8 +5,6 @@ PODS:
   - flutter_pixelmatching (0.0.1):
     - Flutter
     - OpenCV (= 4.3.0)
-  - flutter_zxing (0.0.1):
-    - Flutter
   - image_picker_ios (0.0.1):
     - Flutter
   - OpenCV (4.3.0)
@@ -17,7 +15,6 @@ DEPENDENCIES:
   - camera_avfoundation (from `.symlinks/plugins/camera_avfoundation/ios`)
   - Flutter (from `Flutter`)
   - flutter_pixelmatching (from `.symlinks/plugins/flutter_pixelmatching/ios`)
-  - flutter_zxing (from `.symlinks/plugins/flutter_zxing/ios`)
   - image_picker_ios (from `.symlinks/plugins/image_picker_ios/ios`)
   - permission_handler_apple (from `.symlinks/plugins/permission_handler_apple/ios`)
 
@@ -32,8 +29,6 @@ EXTERNAL SOURCES:
     :path: Flutter
   flutter_pixelmatching:
     :path: ".symlinks/plugins/flutter_pixelmatching/ios"
-  flutter_zxing:
-    :path: ".symlinks/plugins/flutter_zxing/ios"
   image_picker_ios:
     :path: ".symlinks/plugins/image_picker_ios/ios"
   permission_handler_apple:
@@ -43,7 +38,6 @@ SPEC CHECKSUMS:
   camera_avfoundation: 3125e8cd1a4387f6f31c6c63abb8a55892a9eeeb
   Flutter: f04841e97a9d0b0a8025694d0796dd46242b2854
   flutter_pixelmatching: d5a1bc418c95dc72787d677ef9b47d1a1c033e08
-  flutter_zxing: 19a866d17c8a87ee1026d68521c69d2f008635f6
   image_picker_ios: 4a8aadfbb6dc30ad5141a2ce3832af9214a705b5
   OpenCV: 681e0451c1e54c5930a8922277f817ed5d5ab459
   permission_handler_apple: 44366e37eaf29454a1e7b1b7d736c2cceaeb17ce

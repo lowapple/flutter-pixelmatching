@@ -38,3 +38,4 @@ ffigen:
   headers:
     entry-points:
       - './src/PixelMatching.h'
+      - './src/YuvToJpeg.h'
