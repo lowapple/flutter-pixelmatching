@@ -1,2 +1,4 @@
 /tests/*
 /codecov.yaml
+/ios/opencv2.framework
+/android/src/main/jniLibs/x86

@@ -9,7 +9,6 @@ import 'package:flutter/foundation.dart';
 import 'package:image/image.dart' as imglib;
 import '../flutter_pixelmatching.dart';
 import 'pixelmatching_bindings.dart' as bindings;
-import 'pixelmatching_state.dart';
 
 final DynamicLibrary _lib = Platform.isAndroid
     ? DynamicLibrary.open("libflutter_pixelmatching.so")
@@ -20,8 +19,6 @@ final _native = bindings.PixelMatchingBindings(_lib);
 late _PixelMatchingClient _client;
 
 late SendPort _caller;
-
-int _cacheMarkerHash = 0;
 
 class Request {
   int id;
