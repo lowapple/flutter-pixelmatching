@@ -10,17 +10,16 @@ if [ "$current_directory" == "scripts" ]; then
 fi
 
 if [ -d "android" ] || [ -d "ios" ]; then
-    src="./src"
-    ios="./ios/Classes/src"
-
-    # Remove the source files
-    rm -rf "$ios"
-
-    # Create the source directories
-    mkdir -p "$ios"
-
-    # Copy files
-    rsync -av "$src/" "$ios/"
+    rm -rf ./build
+    rm -rf ./download
+    rm -rf ./include
+    rm -rf ./android/src/main/jniLibs
+    chmod +rw ./ios/opencv2.framework
+    rm -rf ./ios/opencv2.framework
+    flutter clean
+    cd example
+    flutter clean
+    cd ..
 else
     echo "The current directory is not a 'flutter project'"
 fi

@@ -10,17 +10,8 @@ if [ "$current_directory" == "scripts" ]; then
 fi
 
 if [ -d "android" ] || [ -d "ios" ]; then
-    src="./src"
-    ios="./ios/Classes/src"
-
-    # Remove the source files
-    rm -rf "$ios"
-
-    # Create the source directories
-    mkdir -p "$ios"
-
-    # Copy files
-    rsync -av "$src/" "$ios/"
+    sh scripts/setup_ios.sh
+    dart pub publish
 else
     echo "The current directory is not a 'flutter project'"
 fi
