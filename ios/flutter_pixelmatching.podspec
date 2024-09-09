@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name                  = 'flutter_pixelmatching'
-  s.version               = '0.0.1'
+  s.version               = '1.0.1'
   s.summary               = 'Pixelmatching plugin with OpenCV'
   s.description           = <<-DESC
 This project is a Flutter plugin that compares two images and outputs their similarity using Native C++ with OpenCV. It provides an efficient way to integrate image comparison features into Flutter applications.

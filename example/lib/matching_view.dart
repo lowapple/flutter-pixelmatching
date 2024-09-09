@@ -95,11 +95,11 @@ class MatchingViewState extends State<MatchingView> {
                           mainAxisAlignment: MainAxisAlignment.center,
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            IconButton.outlined(
+                            IconButton(
                                 onPressed: () => imageRotation(-90),
                                 icon: const Icon(
                                     Icons.rotate_90_degrees_ccw_outlined)),
-                            IconButton.outlined(
+                            IconButton(
                                 onPressed: () => imageRotation(90),
                                 icon: const Icon(
                                     Icons.rotate_90_degrees_cw_outlined)),
