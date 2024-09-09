@@ -40,3 +40,6 @@ build/
 android/src/main/jniLibs
 ios/opencv2.framework
 include/
+
+# FVM Version Cache
+.fvm/

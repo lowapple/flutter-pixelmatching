@@ -1,9 +1,9 @@
 name: flutter_pixelmatching_example
 description: Demonstrates how to use the flutter_pixelmatching plugin.
-publish_to: 'none' # Remove this line if you wish to publish to pub.dev
+publish_to: "none" # Remove this line if you wish to publish to pub.dev
 
 environment:
-  sdk: '>=2.18.5 <4.0.0'
+  sdk: ">=3.0.0 <4.0.0"
 
 dependencies:
   flutter:
@@ -12,15 +12,15 @@ dependencies:
   flutter_pixelmatching:
     path: ../
 
-  cupertino_icons: ^1.0.2
-  camera: ^0.10.3+2
-  permission_handler: ^10.2.0
-  image_picker: ^0.8.7+1
+  cupertino_icons: ^1.0.8
+  camera: ^0.11.0
+  permission_handler: ^11.3.1
+  image_picker: ^1.1.2
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  flutter_lints: ^2.0.0
+  flutter_lints: ^4.0.0
 
 flutter:
   uses-material-design: true
