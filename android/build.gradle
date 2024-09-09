@@ -24,8 +24,11 @@ allprojects {
 apply plugin: 'com.android.library'
 apply plugin: 'kotlin-android'
 
+def min = 24
+def tar = 34
+
 android {
-    compileSdkVersion 33
+    compileSdk tar
 
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
@@ -41,7 +44,7 @@ android {
     }
 
     defaultConfig {
-        minSdkVersion 24
+        minSdkVersion min
         externalNativeBuild {
             cmake {
                 cppFlags '-frtti -fexceptions -std=c++11'

@@ -21,7 +21,7 @@ if [ -d "android" ] || [ -d "ios" ]; then
 
     cp -r opencv2.framework ../ios
     cp -r OpenCV-android-sdk/sdk/native/jni/include ../
-    mkdir -p ../android/src/main/opencv/
+    mkdir -p ../android/src/main/jniLibs/
     cp -r OpenCV-android-sdk/sdk/native/libs/* ../android/src/main/jniLibs/
 
     rm -rf opencv-4.5.4-android-sdk.zip
